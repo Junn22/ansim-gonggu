@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>안심공구 — 지금 하는 육아 공구</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --bg: #ffffff; --surface: #ffffff; --surface-2: #f4f4f5;
+    --border: #e2e2e4; --border-soft: #ececed;
+    --text: #1c1c1e; --text-dim: #5c5c60; --text-faint: #8a8a8e;
+    --accent: #1f6f7a; --accent-soft: #e6f1f2;
+    --badge-bg: #1c1c1e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: "Pretendard", -apple-system, sans-serif; }
+  a { color: inherit; text-decoration: none; }
+  [hidden] { display: none !important; }
+
+  header.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--border-soft); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.2rem; }
+  .top-row { display: flex; align-items: center; gap: 1.1rem; padding: 0.85rem 0; }
+  .brand { font-size: 1.32rem; font-weight: 700; color: var(--accent); display: flex; align-items: baseline; gap: 0.35rem; white-space: nowrap; }
+  .brand small { font-size: 0.72rem; font-weight: 500; color: var(--text-faint); }
+  .search-wrap { flex: 1; max-width: 460px; display: flex; align-items: center; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0.5rem 0.95rem; }
+  .search-wrap input { all: unset; flex: 1; color: var(--text); font-size: 0.87rem; }
+  .search-wrap svg { flex: none; opacity: 0.55; }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 1.3rem 1.2rem 3rem; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.9rem; gap: 0.6rem; flex-wrap: wrap; }
+  .section-head h1 { font-size: 1.15rem; margin: 0; }
+  .section-head .count { font-size: 0.78rem; color: var(--text-faint); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.1rem 0.9rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.15s ease; display: block; }
+  .card:hover { border-color: var(--text-faint); }
+
+  .thumb { position: relative; aspect-ratio: 4 / 5; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb.broken img, .thumb.broken video { display: none; }
+  .thumb .fallback { display: none; flex-direction: column; align-items: center; gap: 0.3rem; opacity: 0.55; }
+  .thumb.broken .fallback { display: flex; }
+  .thumb .fallback span { font-size: 0.62rem; color: var(--text-dim); font-weight: 600; }
+  .thumb .age-badge { position: absolute; top: 0.55rem; left: 0.55rem; background: var(--badge-bg); color: white; font-size: 0.66rem; font-weight: 700; padding: 0.18rem 0.5rem; border-radius: 999px; }
+  .thumb .video-badge { position: absolute; top: 0.55rem; right: 0.55rem; background: var(--surface); border: 1px solid var(--border); font-size: 0.62rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 999px; }
+
+  .card-body { padding: 0.7rem 0.75rem 0.8rem; }
+  .headline { font-size: 0.87rem; font-weight: 600; line-height: 1.35; margin: 0 0 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.35em; }
+  .seller-row { display: flex; align-items: center; gap: 0.4rem; }
+  .seller-avatar { width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: none; }
+  .seller-name { font-size: 0.76rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .likes { margin-left: auto; font-size: 0.72rem; color: var(--text-faint); flex: none; }
+
+  .empty-state { text-align: center; color: var(--text-dim); padding: 4rem 1rem; }
+  footer { max-width: 1180px; margin: 0 auto; padding: 0 1.2rem 2rem; font-size: 0.76rem; color: var(--text-faint); border-top: 1px solid var(--border-soft); padding-top: 1rem; }
+
+  @media (max-width: 620px) {
+    .search-wrap { max-width: none; }
+    .brand small { display: none; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.8rem 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-row">
+    <div class="brand">안심공구 <small>육아 공구 모아보기</small></div>
+    <label class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search" type="text" placeholder="상품, 계정 검색" />
+    </label>
+  </div>
+</header>
+
+<main>
+  <div class="section-head">
+    <h1>지금 하는 육아 공구</h1>
+    <span class="count" id="result-count">0건</span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty-state" id="empty-state" hidden>지금 진행 중인 공구가 없어요. 곧 새로운 공구가 올라올 거예요.</div>
+</main>
+
+<footer>안심공구 · 표시된 게시물은 원 작성자의 인스타그램 게시물이며, 클릭 시 원본으로 이동합니다.</footer>
+
+<script>
+  // ⚠️ 배포 전 아래 두 값을 본인의 Supabase 프로젝트 값으로 바꿔주세요.
+  const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let POSTS = [];
+
+  const $ = (sel) => document.querySelector(sel);
+  const grid = $("#grid");
+
+  function escapeHTML(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function fmtRelTime(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    const day = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (day <= 0) return "오늘";
+    if (day === 1) return "어제";
+    return day + "일 전";
+  }
+
+  function headline(caption) {
+    if (!caption) return "(제목 없음)";
+    const lines = caption.split("\n").map((l) => l.trim()).filter(Boolean);
+    let h = lines[0] || "(제목 없음)";
+    if (/^[#\W_]+$/.test(h) && lines[1]) h = lines[1];
+    h = h.replace(/\s+/g, " ").trim();
+    return h.length > 42 ? h.slice(0, 42).trim() + "…" : h;
+  }
+
+  function mediaHTML(p) {
+    if (p.is_video && p.video_url) {
+      return `<video src="${escapeHTML(p.video_url)}" muted loop playsinline preload="metadata"
+                onmouseover="this.play()" onmouseout="this.pause()"
+                onerror="this.closest('.thumb').classList.add('broken')"></video>`;
+    }
+    return `<img src="${escapeHTML(p.image_url)}" alt="" loading="lazy"
+              onerror="this.closest('.thumb').classList.add('broken')" />`;
+  }
+
+  function cardHTML(p) {
+    const initial = (p.username || "?").slice(0, 1).toUpperCase();
+    return `
+      <a class="card" href="${escapeHTML(p.url)}" target="_blank" rel="noopener">
+        <div class="thumb">
+          <span class="age-badge">${fmtRelTime(p.posted_at)}</span>
+          ${p.is_video ? '<span class="video-badge">🎬 영상</span>' : ""}
+          ${mediaHTML(p)}
+          <div class="fallback">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 15l-5-5-9 9"/></svg>
+            <span>원본에서 확인</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="headline">${escapeHTML(headline(p.caption))}</p>
+          <div class="seller-row">
+            <span class="seller-avatar">${escapeHTML(initial)}</span>
+            <span class="seller-name">@${escapeHTML(p.username)}</span>
+            <span class="likes">♥ ${p.likes ?? 0}</span>
+          </div>
+        </div>
+      </a>`;
+  }
+
+  function render(list) {
+    grid.innerHTML = list.map(cardHTML).join("");
+    $("#result-count").textContent = list.length.toLocaleString() + "건";
+    $("#empty-state").hidden = list.length !== 0;
+  }
+
+  let searchTimer;
+  $("#search").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    const v = e.target.value.trim().toLowerCase();
+    searchTimer = setTimeout(() => {
+      if (!v) return render(POSTS);
+      render(POSTS.filter((p) => (headline(p.caption) + " " + p.username).toLowerCase().includes(v)));
+    }, 150);
+  });
+
+  async function loadPosts() {
+    const { data, error } = await sb
+      .from("posts")
+      .select("*")
+      .eq("status", "approved")
+      .order("posted_at", { ascending: false });
+    if (error) { console.error(error); return; }
+    POSTS = data;
+    render(POSTS);
+  }
+
+  function subscribeRealtime() {
+    sb.channel("posts-public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "posts", filter: "status=eq.approved" }, () => {
+        loadPosts();
+      })
+      .subscribe();
+  }
+
+  loadPosts();
+  subscribeRealtime();
+</script>
+</body>
+</html>

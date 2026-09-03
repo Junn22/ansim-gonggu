@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>공구 후보 검수 큐 · 안심공구 관리자</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --bg: #ffffff; --surface: #ffffff; --surface-2: #f4f4f5;
+    --border: #e2e2e4; --border-soft: #ececed;
+    --text: #1c1c1e; --text-dim: #5c5c60; --text-faint: #8a8a8e;
+    --accent: #1f6f7a; --accent-soft: #e6f1f2;
+    --good: #1e8a4c; --good-soft: #e8f7ee;
+    --bad: #c23b2c; --bad-soft: #fbeae7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: "Pretendard", -apple-system, sans-serif; font-size: 15px; line-height: 1.55; }
+  body { padding-bottom: 4rem; }
+  .mono { font-variant-numeric: tabular-nums; }
+  a { color: inherit; }
+
+  #login-screen {
+    max-width: 360px; margin: 4.5rem auto; padding: 0 1.2rem; text-align: center;
+  }
+  #login-screen h1 { font-size: 1.2rem; margin-bottom: 0.3rem; }
+  #login-screen p { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  #login-form { display: flex; flex-direction: column; gap: 0.6rem; text-align: left; }
+  #login-form input {
+    font: inherit; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px;
+  }
+  #login-form button {
+    font: inherit; font-weight: 600; padding: 0.65rem; border-radius: 8px; border: none;
+    background: var(--accent); color: white; cursor: pointer;
+  }
+  #login-error { color: var(--bad); font-size: 0.8rem; min-height: 1.2em; }
+
+  header.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--border-soft); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 1.1rem; }
+  .top-inner { padding: 0.9rem 0 0.7rem; }
+  .title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+  h1 { font-size: 1.28rem; font-weight: 700; margin: 0; }
+  .subtitle { color: var(--text-dim); font-size: 0.83rem; margin-top: 0.15rem; }
+  #whoami { font-size: 0.74rem; color: var(--text-faint); white-space: nowrap; }
+  #signout { background: none; border: none; color: var(--accent); font: inherit; font-size: 0.74rem; cursor: pointer; text-decoration: underline; margin-left: 0.6rem; }
+
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-top: 0.85rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 10px; padding: 0.45rem 0.5rem; text-align: center; }
+  .stat b { display: block; font-size: 1.05rem; }
+  .stat span { font-size: 0.68rem; color: var(--text-dim); }
+  .stat.approved b { color: var(--good); }
+  .stat.rejected b { color: var(--bad); }
+
+  .controls { margin-top: 0.85rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .tab, .chip-toggle, .search-box { font: inherit; font-size: 0.82rem; border: 1px solid var(--border); background: var(--surface); color: var(--text-dim); border-radius: 999px; padding: 0.34rem 0.75rem; cursor: pointer; white-space: nowrap; }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: 600; }
+  .chip-toggle.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .search-box { flex: 1 1 180px; min-width: 140px; text-align: left; }
+  .search-box input { all: unset; width: 100%; color: var(--text); }
+
+  main { max-width: 880px; margin: 0 auto; padding: 1rem 1.1rem 0; }
+  .note { font-size: 0.8rem; color: var(--text-dim); background: var(--surface-2); border-radius: 10px; padding: 0.6rem 0.8rem; margin-bottom: 1rem; }
+
+  .list { display: flex; flex-direction: column; gap: 0.65rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem 0.95rem; }
+  .card.approved { border-color: var(--good); }
+  .card.rejected { opacity: 0.55; }
+  .card-top { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .badge { font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .score { font-size: 0.7rem; color: var(--text-faint); }
+  .username { font-weight: 600; }
+  .meta-dim { color: var(--text-faint); font-size: 0.78rem; }
+  .status-pill { margin-left: auto; font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px; }
+  .status-pill.approved { background: var(--good-soft); color: var(--good); }
+  .status-pill.rejected { background: var(--bad-soft); color: var(--bad); }
+  .caption { margin: 0.55rem 0 0; white-space: pre-line; font-size: 0.88rem; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .caption.expanded { -webkit-line-clamp: unset; }
+  .more-btn { background: none; border: none; padding: 0; margin-top: 0.25rem; color: var(--accent); font-size: 0.78rem; cursor: pointer; font-weight: 600; }
+  .card-actions { margin-top: 0.7rem; display: flex; gap: 0.45rem; align-items: center; }
+  .act-btn { font: inherit; font-size: 0.82rem; font-weight: 600; border-radius: 8px; padding: 0.4rem 0.75rem; border: 1px solid var(--border); background: var(--surface); color: var(--text-dim); cursor: pointer; }
+  .act-btn.approve.active { background: var(--good); border-color: var(--good); color: white; }
+  .act-btn.reject.active { background: var(--bad); border-color: var(--bad); color: white; }
+  .act-btn.link { margin-left: auto; text-decoration: none; }
+  .empty-state { text-align: center; color: var(--text-dim); padding: 3rem 1rem; font-size: 0.9rem; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <h1>안심공구 관리자</h1>
+  <p>검수 큐에 접속하려면 로그인하세요.</p>
+  <form id="login-form">
+    <input id="login-email" type="email" placeholder="이메일" required autocomplete="username" />
+    <input id="login-password" type="password" placeholder="비밀번호" required autocomplete="current-password" />
+    <button type="submit">로그인</button>
+    <div id="login-error"></div>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header class="top">
+    <div class="wrap top-inner">
+      <div class="title-row">
+        <div>
+          <h1>공구 후보 검수 큐</h1>
+          <div class="subtitle">Apify 자동 스크래핑 결과 · 실시간 반영</div>
+        </div>
+        <div id="whoami"></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="stat-total" class="mono">0</b><span>전체</span></div>
+        <div class="stat"><b id="stat-pending" class="mono">0</b><span>남음</span></div>
+        <div class="stat approved"><b id="stat-approved" class="mono">0</b><span>승인</span></div>
+        <div class="stat rejected"><b id="stat-rejected" class="mono">0</b><span>제외</span></div>
+        <div class="stat"><b id="stat-shown" class="mono">0</b><span>표시중</span></div>
+      </div>
+      <div class="controls">
+        <div class="tabs" id="status-tabs">
+          <button class="tab active" data-status="all">전체</button>
+          <button class="tab" data-status="pending">미검수</button>
+          <button class="tab" data-status="approved">승인함</button>
+          <button class="tab" data-status="rejected">제외함</button>
+        </div>
+        <label class="search-box"><input id="search" type="text" placeholder="계정명 또는 캡션 검색…" /></label>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="note">Apify가 매일 자동으로 새 게시물을 가져와 이 목록에 채워 넣어요. 승인하면 안심공구 공개 페이지에 바로 뜨고, 재스크래핑 때마다 사진/영상 링크만 최신으로 갱신돼요 (검수 상태는 유지).</div>
+    <div class="list" id="list"></div>
+    <div class="empty-state" id="empty-state" hidden>조건에 맞는 게시물이 없어요.</div>
+  </main>
+</div>
+
+<script>
+  // ⚠️ 배포 전 아래 두 값을 본인의 Supabase 프로젝트 값으로 바꿔주세요.
+  // Supabase 대시보드 → Project Settings → API 에서 확인할 수 있어요.
+  const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+  const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let posts = [];
+  let state = { status: "all", search: "" };
+
+  const $ = (sel) => document.querySelector(sel);
+
+  function escapeHTML(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function fmtRelTime(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    const day = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (day <= 0) return "오늘";
+    if (day === 1) return "어제";
+    return day + "일 전";
+  }
+
+  function getFiltered() {
+    const q = state.search.trim().toLowerCase();
+    return posts.filter((p) => {
+      if (state.status !== "all" && p.status !== state.status) return false;
+      if (q && !(p.username || "").toLowerCase().includes(q) && !(p.caption || "").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+
+  function updateStats() {
+    const total = posts.length;
+    const approved = posts.filter((p) => p.status === "approved").length;
+    const rejected = posts.filter((p) => p.status === "rejected").length;
+    $("#stat-total").textContent = total.toLocaleString();
+    $("#stat-pending").textContent = (total - approved - rejected).toLocaleString();
+    $("#stat-approved").textContent = approved.toLocaleString();
+    $("#stat-rejected").textContent = rejected.toLocaleString();
+  }
+
+  function cardHTML(p) {
+    const st = p.status || "pending";
+    const statusPill = st === "approved" ? '<span class="status-pill approved">승인됨</span>'
+      : st === "rejected" ? '<span class="status-pill rejected">제외됨</span>' : "";
+    return `
+      <article class="card ${st}" data-id="${escapeHTML(p.id)}">
+        <div class="card-top">
+          <span class="badge">${escapeHTML(p.label || "")}</span>
+          <span class="score">score ${p.score ?? 0}</span>
+          <span class="username">@${escapeHTML(p.username)}</span>
+          <span class="meta-dim">${fmtRelTime(p.posted_at)} · ♥${p.likes ?? 0}${p.is_video ? " · 🎬 영상" : ""}</span>
+          ${statusPill}
+        </div>
+        <p class="caption">${escapeHTML(p.caption || "(캡션 없음)")}</p>
+        <button class="more-btn" data-act="more">더보기</button>
+        <div class="card-actions">
+          <button class="act-btn approve ${st === "approved" ? "active" : ""}" data-act="approve">✓ 승인</button>
+          <button class="act-btn reject ${st === "rejected" ? "active" : ""}" data-act="reject">✕ 제외</button>
+          <a class="act-btn link" href="${escapeHTML(p.url)}" target="_blank" rel="noopener">원본 보기 ↗</a>
+        </div>
+      </article>`;
+  }
+
+  function render() {
+    const filtered = getFiltered();
+    $("#list").innerHTML = filtered.map(cardHTML).join("");
+    $("#empty-state").hidden = filtered.length !== 0;
+    $("#stat-shown").textContent = filtered.length.toLocaleString();
+    updateStats();
+  }
+
+  $("#list").addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const card = btn.closest(".card");
+    const id = card.getAttribute("data-id");
+    const act = btn.getAttribute("data-act");
+
+    if (act === "more") {
+      const cap = card.querySelector(".caption");
+      cap.classList.toggle("expanded");
+      btn.textContent = cap.classList.contains("expanded") ? "접기" : "더보기";
+      return;
+    }
+    if (act === "approve" || act === "reject") {
+      const wanted = act === "approve" ? "approved" : "rejected";
+      const p = posts.find((x) => x.id === id);
+      const next = p.status === wanted ? "pending" : wanted;
+
+      const { data: { user } } = await sb.auth.getUser();
+      const { error } = await sb.from("posts").update({
+        status: next,
+        reviewed_at: next === "pending" ? null : new Date().toISOString(),
+        reviewed_by: next === "pending" ? null : (user?.email ?? null),
+      }).eq("id", id);
+      if (error) { alert("저장 실패: " + error.message); return; }
+      // 실시간 구독이 posts 배열을 갱신하고 다시 render() 하므로 여기선 추가 처리 불필요
+    }
+  });
+
+  $("#status-tabs").addEventListener("click", (e) => {
+    const btn = e.target.closest(".tab");
+    if (!btn) return;
+    document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+    btn.classList.add("active");
+    state.status = btn.getAttribute("data-status");
+    render();
+  });
+
+  let searchTimer;
+  $("#search").addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+    const v = e.target.value;
+    searchTimer = setTimeout(() => { state.search = v; render(); }, 180);
+  });
+
+  async function loadPosts() {
+    const { data, error } = await sb.from("posts").select("*").order("score", { ascending: false });
+    if (error) { console.error(error); return; }
+    posts = data;
+    render();
+  }
+
+  function subscribeRealtime() {
+    sb.channel("posts-admin")
+      .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => {
+        loadPosts();
+      })
+      .subscribe();
+  }
+
+  // ---- 인증 ----
+  async function boot() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) return showApp(session);
+    showLogin();
+  }
+
+  function showLogin() {
+    $("#login-screen").hidden = false;
+    $("#app").hidden = true;
+  }
+
+  async function showApp(session) {
+    $("#login-screen").hidden = true;
+    $("#app").hidden = false;
+    $("#whoami").innerHTML = escapeHTML(session.user.email) + ' <button id="signout">로그아웃</button>';
+    $("#signout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+    await loadPosts();
+    subscribeRealtime();
+  }
+
+  $("#login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    $("#login-error").textContent = "";
+    const email = $("#login-email").value.trim();
+    const password = $("#login-password").value;
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) { $("#login-error").textContent = "로그인 실패: " + error.message; return; }
+    showApp(data.session);
+  });
+
+  boot();
+</script>
+</body>
+</html>
