@@ -1,197 +1,2566 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<title>안심공구 — 지금 하는 육아 공구</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구멍이 리뷰 체험단</title>
+<meta property="og:title" content="구멍이 리뷰 체험단">
+<meta property="og:description" content="체험단에 참여하고 구매금액과 수수료를 받아보세요.">
+<meta property="og:image" content="https://review-ledger.vercel.app/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#7C2D3B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="구멍이 체험단">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(function (OneSignal) {
+    OneSignal.init({
+      appId: "a5262a20-a153-4847-b172-4aab3257a733",
+      serviceWorkerParam: { scope: "/" },
+      serviceWorkerPath: "/sw.js"
+    });
+  });
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
-  :root {
-    --bg: #ffffff; --surface: #ffffff; --surface-2: #f4f4f5;
-    --border: #e2e2e4; --border-soft: #ececed;
-    --text: #1c1c1e; --text-dim: #5c5c60; --text-faint: #8a8a8e;
-    --accent: #1f6f7a; --accent-soft: #e6f1f2;
-    --badge-bg: #1c1c1e;
+*,*::before,*::after{box-sizing:border-box;}
+:root{
+  --paper:#EEEDE1; --surface:#F8F7EF; --surface-2:#F1F0E4;
+  --ink:#24261F; --ink-soft:#5B5A4C; --ink-faint:#8B8973;
+  --line:#D8D4C2; --line-strong:#C3BEA6;
+  --accent:#7C2D3B; --accent-ink:#FBF3F1; --accent-soft:#F1DCE0; --accent-soft-ink:#5E2029;
+  --success:#2F6E44; --success-soft:#E1EEE1;
+  --warning:#8C6212; --warning-soft:#F3E6C9;
+  --critical:#B23A2E; --critical-soft:#F6DEDA;
+  --info:#375D77; --info-soft:#DEE7EC;
+  --shadow:0 1px 2px rgba(36,38,31,.07), 0 6px 16px rgba(36,38,31,.06);
+  --radius:10px;
+  --font-display:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-body:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-mono:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#1B1A15; --surface:#242219; --surface-2:#2B2920;
+    --ink:#EDE9DB; --ink-soft:#B7B29E; --ink-faint:#847F68;
+    --line:#3A382C; --line-strong:#4C4938;
+    --accent:#E39BA8; --accent-ink:#2B1015; --accent-soft:#3B2229; --accent-soft-ink:#F0C4CC;
+    --success:#7DC594; --success-soft:#1E3226;
+    --warning:#E0B15C; --warning-soft:#3A2E14;
+    --critical:#E8897C; --critical-soft:#3A211D;
+    --info:#9CC2D8; --info-soft:#1E2C34;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.4);
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: "Pretendard", -apple-system, sans-serif; }
-  a { color: inherit; text-decoration: none; }
-  [hidden] { display: none !important; }
-
-  header.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--border-soft); }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.2rem; }
-  .top-row { display: flex; align-items: center; gap: 1.1rem; padding: 0.85rem 0; }
-  .brand { font-size: 1.32rem; font-weight: 700; color: var(--accent); display: flex; align-items: baseline; gap: 0.35rem; white-space: nowrap; }
-  .brand small { font-size: 0.72rem; font-weight: 500; color: var(--text-faint); }
-  .search-wrap { flex: 1; max-width: 460px; display: flex; align-items: center; gap: 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0.5rem 0.95rem; }
-  .search-wrap input { all: unset; flex: 1; color: var(--text); font-size: 0.87rem; }
-  .search-wrap svg { flex: none; opacity: 0.55; }
-
-  main { max-width: 1180px; margin: 0 auto; padding: 1.3rem 1.2rem 3rem; }
-  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.9rem; gap: 0.6rem; flex-wrap: wrap; }
-  .section-head h1 { font-size: 1.15rem; margin: 0; }
-  .section-head .count { font-size: 0.78rem; color: var(--text-faint); }
-
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.1rem 0.9rem; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.15s ease; display: block; }
-  .card:hover { border-color: var(--text-faint); }
-
-  .thumb { position: relative; aspect-ratio: 4 / 5; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .thumb.broken img, .thumb.broken video { display: none; }
-  .thumb .fallback { display: none; flex-direction: column; align-items: center; gap: 0.3rem; opacity: 0.55; }
-  .thumb.broken .fallback { display: flex; }
-  .thumb .fallback span { font-size: 0.62rem; color: var(--text-dim); font-weight: 600; }
-  .thumb .age-badge { position: absolute; top: 0.55rem; left: 0.55rem; background: var(--badge-bg); color: white; font-size: 0.66rem; font-weight: 700; padding: 0.18rem 0.5rem; border-radius: 999px; }
-  .thumb .video-badge { position: absolute; top: 0.55rem; right: 0.55rem; background: var(--surface); border: 1px solid var(--border); font-size: 0.62rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 999px; }
-
-  .card-body { padding: 0.7rem 0.75rem 0.8rem; }
-  .headline { font-size: 0.87rem; font-weight: 600; line-height: 1.35; margin: 0 0 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.35em; }
-  .seller-row { display: flex; align-items: center; gap: 0.4rem; }
-  .seller-avatar { width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: none; }
-  .seller-name { font-size: 0.76rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .likes { margin-left: auto; font-size: 0.72rem; color: var(--text-faint); flex: none; }
-
-  .empty-state { text-align: center; color: var(--text-dim); padding: 4rem 1rem; }
-  footer { max-width: 1180px; margin: 0 auto; padding: 0 1.2rem 2rem; font-size: 0.76rem; color: var(--text-faint); border-top: 1px solid var(--border-soft); padding-top: 1rem; }
-
-  @media (max-width: 620px) {
-    .search-wrap { max-width: none; }
-    .brand small { display: none; }
-    .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.8rem 0.6rem; }
-  }
+}
+:root[data-theme="dark"]{
+  --paper:#1B1A15; --surface:#242219; --surface-2:#2B2920;
+  --ink:#EDE9DB; --ink-soft:#B7B29E; --ink-faint:#847F68;
+  --line:#3A382C; --line-strong:#4C4938;
+  --accent:#E39BA8; --accent-ink:#2B1015; --accent-soft:#3B2229; --accent-soft-ink:#F0C4CC;
+  --success:#7DC594; --success-soft:#1E3226;
+  --warning:#E0B15C; --warning-soft:#3A2E14;
+  --critical:#E8897C; --critical-soft:#3A211D;
+  --info:#9CC2D8; --info-soft:#1E2C34;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.4);
+}
+html{background:var(--paper);}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+button{cursor:pointer;}
+a{color:var(--accent);}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;text-wrap:balance;margin:0;}
+.app-shell{max-width:1080px;margin:0 auto;padding:0 20px 64px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 20px 18px;max-width:1080px;margin:0 auto;flex-wrap:wrap;border-bottom:3px solid var(--accent);position:relative;}
+.topbar::after{content:"";position:absolute;left:20px;right:20px;bottom:-6px;height:1px;background:repeating-linear-gradient(90deg,var(--line-strong) 0 6px,transparent 6px 12px);}
+.brand{display:flex;flex-direction:column;gap:2px;}
+.brand-mark{font-family:var(--font-display);font-weight:700;font-size:1.5rem;letter-spacing:.01em;}
+.brand-sub{font-size:.82rem;color:var(--ink-soft);letter-spacing:.02em;}
+.roles{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:999px;border:1px solid var(--line);}
+.role-btn{border:none;background:transparent;padding:8px 18px;border-radius:999px;font-weight:600;color:var(--ink-soft);}
+.role-btn.is-active{background:var(--accent);color:var(--accent-ink);}
+.role-btn:focus-visible,button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+section{margin-top:36px;}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px;}
+.intro{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;color:var(--ink-soft);}
+.intro p{margin:0;}
+.campaign-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:14px;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+.campaign-card{padding:18px;display:flex;flex-direction:column;gap:10px;}
+.card-top{display:flex;align-items:center;justify-content:space-between;}
+.pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:.76rem;font-weight:600;letter-spacing:.02em;white-space:nowrap;}
+.pill-recruiting{background:var(--success-soft);color:var(--success);}
+.pill-closed{background:var(--surface-2);color:var(--ink-faint);}
+.pill-assigned{background:var(--info-soft);color:var(--info);}
+.pill-purchased{background:var(--warning-soft);color:var(--warning);}
+.pill-reviewed{background:var(--success-soft);color:var(--success);}
+.pill-paid{background:var(--accent-soft);color:var(--accent-soft-ink);}
+.dday{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-faint);}
+.share-icon-btn{width:26px;height:26px;flex-shrink:0;border-radius:50%;background:var(--surface-2);color:var(--ink-soft);display:flex;align-items:center;justify-content:center;border:1px solid var(--line-strong);padding:0;}
+.share-icon-btn svg{width:14px;height:14px;}
+.share-icon-btn:hover{color:var(--accent);border-color:var(--accent);}
+.campaign-card h3{font-size:1.08rem;}
+.seller{margin:0;font-size:.85rem;color:var(--ink-soft);}
+.option-name{margin:-2px 0 0;font-size:.92rem;font-weight:600;color:var(--ink-soft);}
+.option-name .option-label{color:var(--ink-faint);font-weight:600;}
+.payout{display:flex;flex-direction:column;gap:2px;margin:2px 0;font-variant-numeric:tabular-nums;}
+.payout .row{display:flex;justify-content:space-between;font-size:.86rem;color:var(--ink-soft);}
+.payout .row.total{font-weight:700;color:var(--ink);font-size:1rem;border-top:1px dashed var(--line-strong);padding-top:6px;margin-top:4px;}
+.progress{height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden;}
+.progress .bar{height:100%;background:var(--accent);}
+.progress-label{margin:0;font-size:.82rem;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+.progress-label-link{background:none;border:none;padding:0;font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer;text-align:left;}
+.applicant-name-list{max-height:360px;overflow-y:auto;margin:0;padding-left:26px;}
+.applicant-name-list li{padding:4px 0;border-bottom:1px solid var(--line);font-size:.9rem;}
+.btn{border-radius:8px;padding:10px 16px;font-weight:600;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.btn-block{width:100%;}
+.btn-sm{padding:6px 12px;font-size:.82rem;border-radius:7px;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.my-status{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;}
+.lookup-form{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.lookup-form input{flex:1;min-width:200px;}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.field label{font-size:.82rem;font-weight:600;color:var(--ink-soft);}
+.field input,.field select,.lookup-form input,.inline-form input,.inline-form select{border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);border-radius:7px;padding:9px 11px;font-weight:500;}
+.field-check{display:flex;gap:8px;align-items:flex-start;font-size:.86rem;color:var(--ink-soft);}
+.field-check input{margin-top:3px;}
+.notice{background:var(--info-soft);color:var(--info);border-radius:8px;padding:10px 12px;font-size:.84rem;}
+.notice-success{background:var(--success-soft);color:var(--success);border-radius:8px;padding:10px 12px;font-size:.84rem;}
+.error-text{background:var(--critical-soft);color:var(--critical);border-radius:8px;padding:10px 12px;font-size:.84rem;}
+.result-card{border:1px solid var(--line);border-radius:9px;padding:14px;margin-top:10px;background:var(--surface);}
+.result-card .head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+.result-card .product{font-weight:600;}
+.inline-form{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.inline-form input{flex:1;min-width:160px;}
+.inline-form select{min-width:80px;}
+.copy-line{display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:7px;padding:8px 10px;font-size:.82rem;margin:8px 0;}
+.copy-line code{font-family:var(--font-mono);flex:1;word-break:break-all;}
+.keyword-box{background:var(--info-soft);border-radius:9px;padding:12px 14px;margin:2px 0 4px;border:1.5px solid var(--info);}
+.keyword-box .keyword-hint{margin:0;font-size:.95rem;font-weight:700;color:var(--info);line-height:1.4;}
+.keyword-box .copy-line{background:var(--surface);margin:10px 0 0;padding:10px 12px;}
+.keyword-box .copy-line code{font-weight:700;color:var(--ink);font-size:1.1rem;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;}
+.stat-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);text-align:left;width:100%;}
+.stat-card .label{font-size:.78rem;color:var(--ink-faint);letter-spacing:.02em;}
+.stat-card .value{font-family:var(--font-mono);font-size:1.55rem;font-weight:500;margin-top:4px;font-variant-numeric:tabular-nums;}
+.stat-card.clickable{cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.stat-card.clickable:hover{border-color:var(--accent);}
+.stat-card.is-active{border-color:var(--accent);}
+.stat-card.is-active .value{color:var(--accent);}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:30px;}
+.tab-btn{border:none;background:transparent;padding:10px 16px;font-weight:600;color:var(--ink-faint);border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab-btn.is-active{color:var(--accent);border-color:var(--accent);}
+.admin-toolbar{display:flex;justify-content:flex-end;margin:16px 0;}
+.camp-row{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+.camp-row-head{display:flex;align-items:center;gap:14px;padding:14px 18px;flex-wrap:wrap;cursor:pointer;}
+.camp-row-head:hover{background:var(--surface-2);}
+.camp-row-head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
+.camp-row-head .name{flex:1;min-width:180px;}
+.camp-row-head .name .p{font-weight:600;}
+.camp-row-head .name .s{font-size:.8rem;color:var(--ink-soft);}
+.expand-caret{color:var(--ink-faint);font-size:.75rem;}
+.camp-row-date{font-family:var(--font-mono);font-size:.74rem;color:var(--ink-faint);}
+.camp-row-meta{font-family:var(--font-mono);font-size:.8rem;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
+.camp-detail{border-top:1px solid var(--line);padding:14px 18px;background:var(--surface-2);}
+table{width:100%;border-collapse:collapse;font-size:.86rem;}
+th{text-align:left;color:var(--ink-faint);font-weight:600;font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line-strong);}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;}
+td.num,th.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+.table-wrap{overflow-x:auto;}
+.settle-total{display:flex;justify-content:space-between;align-items:center;background:var(--accent-soft);color:var(--accent-soft-ink);border-radius:9px;padding:14px 18px;margin:16px 0;font-weight:600;}
+.settle-total .amt{font-family:var(--font-mono);font-size:1.3rem;font-variant-numeric:tabular-nums;}
+.modal-backdrop{position:fixed;inset:0;background:rgba(24,22,16,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;}
+.modal{background:var(--paper);border:1px solid var(--line);border-radius:12px;max-width:440px;width:100%;max-height:88vh;overflow-y:auto;padding:24px;box-shadow:var(--shadow);}
+.modal h2{font-size:1.2rem;margin-bottom:14px;}
+.modal-actions{display:flex;gap:10px;margin-top:16px;}
+.modal-actions .btn{flex:1;}
+.login-panel{max-width:340px;margin:40px auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;}
+.login-panel p{color:var(--ink-soft);font-size:.85rem;}
+.toast-wrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:8px;align-items:center;}
+.toast{background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:8px;font-size:.86rem;box-shadow:var(--shadow);}
+.toast.warn{background:var(--warning);color:#2b1e00;}
+.toast.err{background:var(--critical);color:#fff;}
+.empty{color:var(--ink-faint);font-size:.86rem;padding:16px;text-align:center;}
+.foot-note{margin-top:48px;color:var(--ink-faint);font-size:.78rem;text-align:center;}
+.warn-tag{color:var(--critical);font-weight:600;}
+.spinner-note{color:var(--ink-faint);font-size:.85rem;padding:24px;text-align:center;}
+.camp-image{position:relative;border-radius:9px;overflow:hidden;background:var(--surface-2);margin:2px 0 4px;}
+.camp-image img{display:block;width:100%;max-height:220px;object-fit:cover;}
+.camp-image-zoom{position:absolute;right:8px;bottom:8px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;border:none;padding:0;}
+.camp-image-zoom svg{width:16px;height:16px;}
+.result-thumb{position:relative;flex:none;width:84px;height:84px;border-radius:9px;overflow:hidden;background:var(--surface-2);}
+.result-thumb img{display:block;width:100%;height:100%;object-fit:cover;}
+.result-thumb .camp-image-zoom{width:26px;height:26px;right:5px;bottom:5px;}
+.result-thumb .camp-image-zoom svg{width:13px;height:13px;}
+.image-lightbox-backdrop{position:fixed;inset:0;background:rgba(10,9,6,.88);display:flex;align-items:center;justify-content:center;padding:28px;z-index:90;}
+.image-lightbox-backdrop img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;}
+.image-lightbox-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:1.2rem;line-height:1;display:flex;align-items:center;justify-content:center;}
+.camp-row-thumb{width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid var(--line-strong);}
+.image-preview{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.image-preview img{width:56px;height:56px;object-fit:cover;border-radius:7px;border:1px solid var(--line-strong);}
+.image-preview span{font-size:.78rem;color:var(--ink-faint);}
+.invoice-overlay{align-items:flex-start;padding:24px 12px;overflow-y:auto;}
+.invoice-dialog{background:var(--surface);border-radius:12px;padding:20px;max-width:1050px;width:100%;margin:0 auto;}
+.invoice-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-bottom:6px;}
+.invoice-form-grid .field{margin-bottom:0;}
+.invoice-scroll{overflow-x:auto;background:#f4f4f0;padding:16px;border-radius:8px;margin-top:10px;}
+.invoice-wrap{background:#fff;width:900px;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#111;border:3px solid #1414c8;}
+.invoice-title{font-size:24px;font-weight:800;color:#1414c8;text-align:center;padding:16px 0;border-bottom:3px solid #1414c8;letter-spacing:4px;}
+.invoice-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.invoice-table td,.invoice-table th{border:1px solid #1414c8;padding:7px 8px;font-size:13px;color:#111;text-align:center;vertical-align:middle;word-break:break-word;}
+.invoice-table .lbl{font-weight:700;color:#1414c8;background:#fff;}
+.invoice-table .vert{writing-mode:vertical-rl;text-orientation:mixed;font-weight:700;color:#1414c8;letter-spacing:3px;}
+.invoice-table .hd{font-weight:700;background:#eef0fb;color:#1414c8;}
+.invoice-table .val{font-weight:600;}
+.invoice-table .val-strong{font-weight:800;}
 </style>
 </head>
 <body>
-
-<header class="top">
-  <div class="wrap top-row">
-    <div class="brand">안심공구 <small>육아 공구 모아보기</small></div>
-    <label class="search-wrap">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="search" type="text" placeholder="상품, 계정 검색" />
-    </label>
-  </div>
-</header>
-
-<main>
-  <div class="section-head">
-    <h1>지금 하는 육아 공구</h1>
-    <span class="count" id="result-count">0건</span>
-  </div>
-  <div class="grid" id="grid"></div>
-  <div class="empty-state" id="empty-state" hidden>지금 진행 중인 공구가 없어요. 곧 새로운 공구가 올라올 거예요.</div>
-</main>
-
-<footer>안심공구 · 표시된 게시물은 원 작성자의 인스타그램 게시물이며, 클릭 시 원본으로 이동합니다.</footer>
+<div id="app"></div>
 
 <script>
-  // ⚠️ 배포 전 아래 두 값을 본인의 Supabase 프로젝트 값으로 바꿔주세요.
-  const SUPABASE_URL = "https://rzaujomywljvrejiaczt.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6YXVqb215d2xqdnJlamlhY3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MTY5NDUsImV4cCI6MjEwMzk5Mjk0NX0._Z5-iSQL0jio1ByxNsVNPRBPeJ30NLi8OyB-UH2AKXk";
+(function () {
+  "use strict";
 
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  /* ---- Supabase project config (publishable key is safe to embed) ---- */
+  var SUPABASE_URL = "https://qdllkykcbezvihtwbusw.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable_H5yfhirhqXmSPBuQZ64j7Q_O-7ff1fY";
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  let POSTS = [];
+  var UI = {
+    role: "participant", adminSession: null, expanded: {}, applyCampaignId: null, settleChecked: {}, busy: false,
+    campaignTab: "open", pTab: "open", editingCampaignId: null, viewingImageUrl: null, closedCampaignNotice: false,
+    manualAddCampaignId: null, campSortField: null, campSortDir: "asc", editingApplicantId: null, accessDeniedNotice: false,
+    adminView: "campaigns", ledgerMonth: new Date().toISOString().slice(0, 7), ledgerStatus: "paid",
+    invoiceCampaignIds: [], invoiceDefaults: null,
+    viewingApplicantsCampaignId: null,
+    campSearchQuery: "", ledgerSearchQuery: "",
+    showNewClient: false, editingClientId: null, viewingClientCampaignsId: null, selectedClientCampaignIds: {}
+  };
+  try {
+    var savedRole = sessionStorage.getItem("rl_role");
+    if (savedRole) UI.role = savedRole;
+  } catch (e) {}
 
-  const $ = (sel) => document.querySelector(sel);
-  const grid = $("#grid");
+  // 공유 링크(?c=캠페인ID)로 들어온 경우, 참여자 화면에서 해당 캠페인을 바로 열어준다.
+  var pendingDeepLinkId = null;
+  try {
+    pendingDeepLinkId = new URLSearchParams(location.search).get("c");
+    if (pendingDeepLinkId) UI.role = "participant";
+  } catch (e) {}
 
-  function escapeHTML(s) {
-    return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  var DATA = { campaigns: [], closedCampaigns: [], adminCampaigns: [], lookupItems: [], lookupPhone: "", clientNames: [], clients: [], applicantNames: null, loadingApplicantNames: false };
+  var STATUS_LABEL = { assigned: "배정확정", purchased: "구매완료", reviewed: "리뷰완료", paid: "정산완료" };
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
-
-  function fmtRelTime(iso) {
-    if (!iso) return "";
-    const d = new Date(iso);
-    if (isNaN(d)) return "";
-    const day = Math.floor((Date.now() - d.getTime()) / 86400000);
-    if (day <= 0) return "오늘";
-    if (day === 1) return "어제";
-    return day + "일 전";
+  function ZOOM_BTN(url) {
+    return (
+      '<button type="button" class="camp-image-zoom" data-action="view-image" data-url="' + esc(url) + '" aria-label="이미지 전체보기">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline>' +
+      '<line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>' +
+      "</button>"
+    );
   }
-
-  function headline(caption) {
-    if (!caption) return "(제목 없음)";
-    const lines = caption.split("\n").map((l) => l.trim()).filter(Boolean);
-    let h = lines[0] || "(제목 없음)";
-    if (/^[#\W_]+$/.test(h) && lines[1]) h = lines[1];
-    h = h.replace(/\s+/g, " ").trim();
-    return h.length > 42 ? h.slice(0, 42).trim() + "…" : h;
+  function SHARE_ICON_BTN(campaignId) {
+    return (
+      '<button type="button" class="share-icon-btn" data-action="share-campaign" data-campaign="' + esc(campaignId) + '" aria-label="캠페인 공유">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>' +
+      '<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>' +
+      "</button>"
+    );
   }
-
-  function mediaHTML(p) {
-    if (p.is_video && p.video_url) {
-      return `<video src="${escapeHTML(p.video_url)}" muted loop playsinline preload="metadata"
-                onmouseover="this.play()" onmouseout="this.pause()"
-                onerror="this.closest('.thumb').classList.add('broken')"></video>`;
+  function fmtWon(n) { return "₩" + Number(n || 0).toLocaleString("ko-KR"); }
+  // deliveryType: "empty"(빈박스, +1,000원) / "real"(실배송, +0원) / null(단일 방식 캠페인 - 캠페인의 fee를 그대로 씀)
+  function payout(c, quantity, deliveryType) {
+    var q = quantity || 1;
+    var tiers = c && c.quantity_prices;
+    var base = (tiers && tiers.length >= q) ? tiers[q - 1] : (c.unit_price || 0) * q;
+    var fee;
+    if (deliveryType === "empty") fee = 1000;
+    else if (deliveryType === "real") fee = 0;
+    else fee = (c && c.fee) || 0;
+    return (base || 0) + fee;
+  }
+  // 실배송/빈박스를 한 캠페인에서 함께 운영하는지 여부 (둘 다 목표 인원이 있으면 섞어서 운영)
+  function isMixedDelivery(c) {
+    return !!(c && Number(c.real_delivery_target) > 0 && Number(c.empty_box_target) > 0);
+  }
+  // 섞어서 운영하는 캠페인은 실배송/빈박스 배정 결과에 따라 지급액이 달라지므로,
+  // 신청 전에는 "최소~최대" 범위로 보여준다. 그 외에는 기존처럼 확정 금액을 보여준다.
+  function payoutRangeLabel(c, quantity) {
+    if (isMixedDelivery(c)) {
+      var lo = payout(c, quantity, "real");
+      var hi = payout(c, quantity, "empty");
+      return fmtWon(Math.min(lo, hi)) + " ~ " + fmtWon(Math.max(lo, hi));
     }
-    return `<img src="${escapeHTML(p.image_url)}" alt="" loading="lazy"
-              onerror="this.closest('.thumb').classList.add('broken')" />`;
+    return fmtWon(payout(c, quantity));
+  }
+  function deliveryTypeLabel(t) {
+    return t === "empty" ? "빈박스" : (t === "real" ? "실배송" : "");
+  }
+  function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+  /* ================= 거래명세서 ================= */
+  // "공급받는자"(우리 회사) 정보는 항상 고정.
+  var OUR_COMPANY = { reg: "248-86-03694", name: "(주)케이제이브랜즈", ceo: "김병준", account: "우리은행 1005-904-908422" };
+  // 참여자에게 지급하는 수수료(payout의 fee)와는 별개로, 캠페인을 의뢰한 업체에 청구하는 작업 수수료.
+  var INVOICE_WORK_FEE = { empty: 1500, real: 500 };
+  var INVOICE_EMPTY_BOX_AGENCY_FEE = 2200;
+  var INVOICE_VAT_RATE = 0.1;
+
+  // 캠페인이 단일 방식(빈박스만/실배송만)이면 개별 신청자에는 delivery_type이 안 남아있으므로
+  // 캠페인의 fee 값(0원=실배송, 그 외=빈박스)으로 유추한다.
+  function invoiceDeliveryType(c, a) {
+    if (a.delivery_type === "real" || a.delivery_type === "empty") return a.delivery_type;
+    return Number(c.fee) === 0 ? "real" : "empty";
+  }
+  // 아직 구매 전(배정확정만 된) 신청은 업체에 청구할 실적이 없으므로 제외한다.
+  function invoiceBillable(a) {
+    return a.status !== "assigned";
+  }
+  function invoiceLine(name, count, unitPrice) {
+    var vat = Math.round(unitPrice * INVOICE_VAT_RATE);
+    return { name: name, count: count, unit: "건", unitPrice: unitPrice, vat: vat, total: (unitPrice + vat) * count };
+  }
+  function computeInvoiceLines(c) {
+    var billable = (c.applicants || []).filter(invoiceBillable);
+    var lines = [];
+
+    // 1) 상품 금액 — 신청 수량(가격이 달라지는 단위)별로 묶는다.
+    var byQty = {}, qtyOrder = [];
+    billable.forEach(function (a) {
+      var q = a.quantity || 1;
+      if (!byQty[q]) { byQty[q] = 0; qtyOrder.push(q); }
+      byQty[q] += 1;
+    });
+    qtyOrder.sort(function (x, y) { return x - y; });
+    qtyOrder.forEach(function (q) {
+      var tiers = c.quantity_prices;
+      var unit = (tiers && tiers.length >= q) ? tiers[q - 1] : (c.unit_price || 0) * q;
+      var name = c.product + (c.option_name ? " · " + c.option_name : "") + (q > 1 ? " (" + q + "개)" : "");
+      lines.push(invoiceLine(name, byQty[q], unit));
+    });
+
+    // 2) 작업 수수료 — 실배송/빈박스 여부별로 묶는다. 한 캠페인에 한 방식만 있으면 이름에 방식을 안 붙인다.
+    var byType = { real: 0, empty: 0 };
+    billable.forEach(function (a) { byType[invoiceDeliveryType(c, a)]++; });
+    var mixedTypes = byType.real > 0 && byType.empty > 0;
+    if (byType.real > 0) lines.push(invoiceLine(mixedTypes ? "작업 수수료(실배송)" : "작업 수수료", byType.real, INVOICE_WORK_FEE.real));
+    if (byType.empty > 0) lines.push(invoiceLine(mixedTypes ? "작업 수수료(빈박스)" : "작업 수수료", byType.empty, INVOICE_WORK_FEE.empty));
+
+    // 3) 빈박스 대행 — 빈박스로 진행된 건에만 붙는다.
+    if (byType.empty > 0) lines.push(invoiceLine("빈박스 대행", byType.empty, INVOICE_EMPTY_BOX_AGENCY_FEE));
+
+    return lines;
+  }
+  function splitInvoiceDate(dateStr) {
+    var parts = String(dateStr || "").split("-");
+    if (parts.length < 3) return { y: "", m: "", d: "" };
+    return { y: parts[0].slice(2), m: String(Number(parts[1]) || ""), d: String(Number(parts[2]) || "") };
+  }
+  function fmtDateTime(iso) {
+    try {
+      var d = new Date(iso);
+      return d.toLocaleString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }) + " 입금 처리";
+    } catch (e) { return iso; }
+  }
+  function fmtAppliedAt(iso) {
+    try {
+      var d = new Date(iso);
+      var pad = function (n) { return String(n).padStart(2, "0"); };
+      return String(d.getFullYear()).slice(2) + "." + pad(d.getMonth() + 1) + "." + pad(d.getDate()) + "." + pad(d.getHours()) + ":" + pad(d.getMinutes());
+    } catch (e) { return iso; }
+  }
+  function defaultFarDeadline() {
+    // 마감일 입력을 잠시 폼에서 숨겼기 때문에, "지금 마감" 버튼으로 직접 마감하는
+    // 운영 방식을 그대로 쓸 수 있도록 넉넉히 먼 기본값을 자동으로 채워넣는다.
+    var d = new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    return d.toISOString().slice(0, 10);
+  }
+  function daysUntil(iso) {
+    var target = new Date(iso + "T23:59:59");
+    return Math.ceil((target - new Date()) / 86400000);
+  }
+  function saveRole() { try { sessionStorage.setItem("rl_role", UI.role); } catch (e) {} }
+
+  var toasts = [], toastSeq = 0;
+  function toast(msg, kind) {
+    var id = ++toastSeq;
+    toasts.push({ id: id, msg: msg, kind: kind || "ok" });
+    renderToasts();
+    setTimeout(function () { toasts = toasts.filter(function (t) { return t.id !== id; }); renderToasts(); }, 3600);
+  }
+  function renderToasts() {
+    var el = document.getElementById("toast-wrap");
+    if (!el) return;
+    el.innerHTML = toasts.map(function (t) {
+      return '<div class="toast ' + (t.kind === "err" ? "err" : t.kind === "warn" ? "warn" : "") + '">' + esc(t.msg) + "</div>";
+    }).join("");
   }
 
-  function cardHTML(p) {
-    const initial = (p.username || "?").slice(0, 1).toUpperCase();
-    return `
-      <a class="card" href="${escapeHTML(p.url)}" target="_blank" rel="noopener">
-        <div class="thumb">
-          <span class="age-badge">${fmtRelTime(p.posted_at)}</span>
-          ${p.is_video ? '<span class="video-badge">🎬 영상</span>' : ""}
-          ${mediaHTML(p)}
-          <div class="fallback">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 15l-5-5-9 9"/></svg>
-            <span>원본에서 확인</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <p class="headline">${escapeHTML(headline(p.caption))}</p>
-          <div class="seller-row">
-            <span class="seller-avatar">${escapeHTML(initial)}</span>
-            <span class="seller-name">@${escapeHTML(p.username)}</span>
-            <span class="likes">♥ ${p.likes ?? 0}</span>
-          </div>
-        </div>
-      </a>`;
+  /* ================= RENDER ================= */
+  function render() {
+    var app = document.getElementById("app");
+    app.innerHTML =
+      renderTopbar() +
+      '<div class="app-shell">' +
+      (UI.role === "admin" ? renderAdmin() : renderParticipant()) +
+      '<p class="foot-note">구멍이 리뷰 체험단 · 담당자 화면은 Supabase 로그인으로 보호됩니다.</p>' +
+      "</div>" +
+      renderApplyModal() +
+      renderClosedCampaignModal() +
+      renderAccessDeniedModal() +
+      renderInvoiceModal() +
+      renderApplicantNamesModal() +
+      renderClientCampaignsModal() +
+      renderImageLightbox() +
+      '<div id="toast-wrap" class="toast-wrap"></div>';
+    renderToasts();
   }
 
-  function render(list) {
-    grid.innerHTML = list.map(cardHTML).join("");
-    $("#result-count").textContent = list.length.toLocaleString() + "건";
-    $("#empty-state").hidden = list.length !== 0;
+  function renderClosedCampaignModal() {
+    if (!UI.closedCampaignNotice) return "";
+    return (
+      '<div class="modal-backdrop" data-action="close-closed-notice">' +
+      '<div class="modal" role="dialog" aria-modal="true" data-action="noop" style="text-align:center;">' +
+      '<h2 style="margin-bottom:8px;">마감된 체험단이에요</h2>' +
+      '<p style="color:var(--ink-soft);line-height:1.5;margin-bottom:20px;">이 체험단은 이미 마감되었거나 찾을 수 없어요.<br>지금 모집 중인 다른 체험단을 확인해보세요.</p>' +
+      '<button type="button" class="btn btn-primary btn-block" data-action="close-closed-notice">확인</button>' +
+      "</div></div>"
+    );
   }
 
-  let searchTimer;
-  $("#search").addEventListener("input", (e) => {
-    clearTimeout(searchTimer);
-    const v = e.target.value.trim().toLowerCase();
-    searchTimer = setTimeout(() => {
-      if (!v) return render(POSTS);
-      render(POSTS.filter((p) => (headline(p.caption) + " " + p.username).toLowerCase().includes(v)));
-    }, 150);
+  function renderAccessDeniedModal() {
+    if (!UI.accessDeniedNotice) return "";
+    return (
+      '<div class="modal-backdrop" data-action="close-access-denied">' +
+      '<div class="modal" role="dialog" aria-modal="true" data-action="noop" style="text-align:center;">' +
+      '<h2 style="margin-bottom:8px;">담당자 전용 화면이에요</h2>' +
+      '<p style="color:var(--ink-soft);line-height:1.5;margin-bottom:20px;">허용된 담당자 계정으로만 접근할 수 있어요.<br>계정을 잘못 선택하셨다면 다시 로그인해주세요.</p>' +
+      '<button type="button" class="btn btn-primary btn-block" data-action="close-access-denied">확인</button>' +
+      "</div></div>"
+    );
+  }
+
+  // 이름 가운데를 가려서 보여준다: 3자 이상이면 첫/끝 글자만 남기고 가운데는 전부 * 하나로,
+  // 2자면 뒷글자만 가린다. (예: 김철수 -> 김*수, 김린 -> 김*)
+  function maskName(name) {
+    var s = String(name || "").trim();
+    if (s.length <= 1) return s;
+    if (s.length === 2) return s[0] + "*";
+    return s[0] + "*" + s[s.length - 1];
+  }
+
+  function renderApplicantNamesModal() {
+    if (!UI.viewingApplicantsCampaignId) return "";
+    var items = DATA.applicantNames;
+    var body;
+    if (DATA.loadingApplicantNames) {
+      body = '<div class="spinner-note">불러오는 중…</div>';
+    } else if (!items || !items.length) {
+      body = '<div class="empty">아직 신청한 분이 없어요.</div>';
+    } else {
+      // 실배송/빈박스가 섞여 있는 캠페인일 때만 구분 태그를 보여준다. 한 방식뿐이면 굳이 안 보여줘도 되니까 그냥 나열만 한다.
+      var typeSet = {};
+      items.forEach(function (it) { typeSet[it.deliveryType] = true; });
+      var showType = Object.keys(typeSet).length > 1;
+      body = "<ol class=\"applicant-name-list\">" + items.map(function (it) {
+        return "<li>" + esc(maskName(it.name)) + " / " + esc(it.phone4 || "----") +
+          (showType ? ' <span class="pill ' + (it.deliveryType === "real" ? "pill-purchased" : "pill-closed") + '" style="font-size:.68rem;">' + deliveryTypeLabel(it.deliveryType) + "</span>" : "") +
+          "</li>";
+      }).join("") + "</ol>";
+    }
+    return (
+      '<div class="modal-backdrop" data-action="close-applicants">' +
+      '<div class="modal" role="dialog" aria-modal="true" data-action="noop">' +
+      "<h2>신청자 명단 (신청 순서)</h2>" +
+      body +
+      '<div class="modal-actions"><button type="button" class="btn btn-block" data-action="close-applicants">닫기</button></div>' +
+      "</div></div>"
+    );
+  }
+
+  // 업체 관리에서 업체 상호를 누르면, 그 업체(셀러)로 등록된 캠페인을 최신순으로 보여준다.
+  // 이미 admin 화면 로드 시 전체 캠페인을 갖고 있으므로 별도 조회 없이 클라이언트에서 필터링한다.
+  function renderClientCampaignsModal() {
+    if (!UI.viewingClientCampaignsId) return "";
+    var client = (DATA.clients || []).filter(function (c) { return String(c.id) === String(UI.viewingClientCampaignsId); })[0];
+    if (!client) return "";
+    var camps = (DATA.adminCampaigns || []).filter(function (c) { return (c.seller || "") === client.name; })
+      .slice().sort(function (a, b) { return String(b.created_at || "").localeCompare(String(a.created_at || "")); });
+    var body, footerExtra = "";
+    if (!camps.length) {
+      body = '<div class="empty">이 업체로 진행한 캠페인이 없어요.</div>';
+    } else {
+      // 캠페인을 여러 개 체크해서 거래명세서 한 장으로 합쳐 발행할 수 있게 체크박스를 붙인다.
+      // (1개만 체크해도 그대로 동작하니, 캠페인이 하나뿐일 때도 이 버튼 하나로 발행 가능하다.)
+      var selectedCount = camps.filter(function (c) { return UI.selectedClientCampaignIds[c.id]; }).length;
+      var allChecked = camps.every(function (c) { return UI.selectedClientCampaignIds[c.id]; });
+      body =
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+        '<button type="button" class="btn btn-sm" data-action="toggle-select-all-client-campaigns">' + (allChecked ? "전체 해제" : "전체 선택") + "</button>" +
+        '<span style="font-size:.82rem;color:var(--ink-faint);">' + selectedCount + "개 선택됨</span>" +
+        "</div>" +
+        "<ul class=\"applicant-name-list\" style=\"list-style:none;padding-left:0;\">" + camps.map(function (c) {
+          var open = campaignIsOpen(c);
+          var filled = (c.applicants || []).length;
+          var checked = !!UI.selectedClientCampaignIds[c.id];
+          return (
+            '<li><label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;">' +
+            '<input type="checkbox" data-action="toggle-client-campaign" data-campaign="' + c.id + '" style="margin-top:4px;flex:none;"' + (checked ? " checked" : "") + ">" +
+            "<span>" + esc(c.product) + (c.option_name ? " · " + esc(c.option_name) : "") +
+            ' <span class="pill ' + (open ? "pill-purchased" : "pill-closed") + '" style="font-size:.68rem;">' + (open ? "진행중" : "마감") + "</span>" +
+            '<br><span style="font-size:.78rem;color:var(--ink-faint);">' + filled + " / " + c.recruit_count + "명 · " + esc(String(c.created_at || "").slice(0, 10)) + "</span></span>" +
+            "</label></li>"
+          );
+        }).join("") + "</ul>";
+      footerExtra = '<button type="button" class="btn btn-primary" data-action="issue-combined-invoice">선택한 캠페인 거래명세서 발행</button>';
+    }
+    return (
+      '<div class="modal-backdrop" data-action="close-client-campaigns">' +
+      '<div class="modal" role="dialog" aria-modal="true" data-action="noop">' +
+      "<h2>" + esc(client.name) + " · 진행 캠페인</h2>" +
+      '<p style="font-size:.78rem;color:var(--ink-faint);margin:-4px 0 10px;">체크박스로 캠페인을 골라서(1개만 골라도 됩니다) 거래명세서 한 장으로 합쳐 발행할 수 있어요.</p>' +
+      body +
+      '<div class="modal-actions">' + footerExtra + '<button type="button" class="btn btn-block" data-action="close-client-campaigns">닫기</button></div>' +
+      "</div></div>"
+    );
+  }
+
+  function renderImageLightbox() {
+    if (!UI.viewingImageUrl) return "";
+    return (
+      '<div class="image-lightbox-backdrop" data-action="close-image-lightbox">' +
+      '<button type="button" class="image-lightbox-close" data-action="close-image-lightbox" aria-label="닫기">✕</button>' +
+      '<img src="' + esc(UI.viewingImageUrl) + '" alt="">' +
+      "</div>"
+    );
+  }
+
+  function renderTopbar() {
+    return '<header class="topbar">' +
+      '<div class="brand"><span style="display:flex;align-items:center;gap:8px;">' +
+      '<span class="brand-mark" data-action="go-home" role="button" tabindex="0" style="cursor:pointer;">구멍이 리뷰 체험단</span>' +
+      '<button type="button" class="btn btn-sm" data-action="enable-push" title="새 체험단 알림 받기" aria-label="새 체험단 알림 받기" style="padding:4px 9px;">🔔</button>' +
+      "</span>" +
+      '<span class="brand-sub">체험단 모집 · 배정 · 정산 콘솔</span></div>' +
+      '<button type="button" class="btn btn-sm" data-action="switch-role" data-role="admin" title="담당자 로그인" aria-label="담당자 로그인">🔒 담당자</button>' +
+      "</header>";
+  }
+
+  /* ---- Participant ---- */
+  function renderParticipant() {
+    var tab = UI.pTab === "closed" ? "closed" : "open";
+    var recruiting = DATA.campaigns;
+    var closedList = DATA.closedCampaigns;
+    var shown = tab === "closed" ? closedList : recruiting;
+    var loading = tab === "closed" ? DATA.loadingClosedCampaigns : DATA.loadingCampaigns;
+    return (
+      renderMyStatus() +
+      '<section>' +
+      '<div style="display:flex;gap:8px;margin-bottom:14px;">' +
+      '<button type="button" class="btn btn-sm ' + (tab === "open" ? "btn-primary" : "") + '" data-action="participant-tab" data-tab="open">모집중</button>' +
+      '<button type="button" class="btn btn-sm ' + (tab === "closed" ? "btn-primary" : "") + '" data-action="participant-tab" data-tab="closed">마감</button>' +
+      "</div>" +
+      (loading
+        ? '<div class="spinner-note">불러오는 중…</div>'
+        : shown.length
+          ? '<div class="campaign-grid">' + shown.map(function (c) { return renderCampaignCard(c, tab === "closed"); }).join("") + "</div>"
+          : '<div class="empty">' + (tab === "closed" ? "마감된 체험단이 아직 없어요." : "지금은 모집 중인 체험단이 없어요.") + "</div>") +
+      "</section>"
+    );
+  }
+
+  function renderKeywordBox(keyword) {
+    return (
+      '<div class="keyword-box">' +
+      '<p class="keyword-hint">쿠팡에 아래 키워드 검색해서 구매해주세요!</p>' +
+      '<div class="copy-line"><code>' + esc(keyword) + '</code><button class="btn btn-sm" type="button" data-action="copy-keyword" data-value="' + esc(keyword) + '">복사</button></div>' +
+      "</div>"
+    );
+  }
+
+  function renderCampaignCard(c, closed) {
+    var filled = c.filled_count || 0;
+    var pct = Math.min(100, Math.round((filled / c.recruit_count) * 100));
+    return (
+      '<article class="card campaign-card">' +
+      '<div class="card-top"><span class="pill pill-' + (closed ? "closed" : "recruiting") + '">' + (closed ? "마감" : "모집중") + "</span>" +
+      '<span style="display:flex;align-items:center;gap:6px;">' +
+      '<span class="dday">' + esc(String(c.created_at || "").slice(0, 10)) + " 등록</span>" +
+      (closed ? "" : SHARE_ICON_BTN(c.id)) +
+      "</span></div>" +
+      (c.image_url ? '<div class="camp-image"><img src="' + esc(c.image_url) + '" alt="' + esc(c.product) + '" loading="lazy">' + ZOOM_BTN(c.image_url) + "</div>" : "") +
+      "<h3>" + esc(c.product) + "</h3>" +
+      (c.option_name ? '<p class="option-name"><span class="option-label">옵션 : </span>' + esc(c.option_name) + "</p>" : "") +
+      '<p class="seller">' + esc(c.seller) + " 제공</p>" +
+      (!closed && c.keyword ? renderKeywordBox(c.keyword) : "") +
+      '<dl class="payout">' +
+      '<div class="row"><dt>상품 금액</dt><dd>' + fmtWon(c.unit_price) + "</dd></div>" +
+      (isMixedDelivery(c)
+        ? '<div class="row"><dt>수수료</dt><dd>실배송 +0원 · 빈박스 +1,000원</dd></div>'
+        : '<div class="row"><dt>수수료</dt><dd>+' + fmtWon(c.fee) + "</dd></div>") +
+      (c.note ? '<div class="row"><dt style="color:var(--ink-faint);">비고</dt><dd style="color:var(--ink-faint);font-weight:400;">' + esc(c.note) + "</dd></div>" : "") +
+      '<div class="row total"><dt>참여자 지급액</dt><dd>' + payoutRangeLabel(c, 1) + "</dd></div>" +
+      "</dl>" +
+      (!closed && isMixedDelivery(c) ? '<p style="font-size:.78rem;color:var(--ink-faint);margin-top:2px;">실배송/빈박스는 선착순으로 자동 배정돼요. 신청 후 결과를 확인할 수 있어요.</p>' : "") +
+      (!closed && c.max_quantity > 1 ? '<p style="font-size:.78rem;color:var(--ink-faint);margin-top:2px;">최대 ' + c.max_quantity + "개까지 신청 가능 · 신청 시 수량별 지급액을 확인할 수 있어요</p>" : "") +
+      (isMixedDelivery(c)
+        ? '<p class="progress-label" style="margin-top:2px;">실배송 ' + (c.real_filled_count || 0) + "/" + c.real_delivery_target + " · 빈박스 " + (c.empty_filled_count || 0) + "/" + c.empty_box_target + "</p>"
+        : "") +
+      (closed
+        ? '<div class="progress"><div class="bar" style="width:100%;background:var(--ink-faint);"></div></div>' +
+          '<button type="button" class="progress-label progress-label-link" data-action="view-applicants" data-campaign="' + c.id + '">' + filled + " / " + c.recruit_count + "명 신청 · 마감됐어요</button>" +
+          '<button class="btn btn-block" disabled style="opacity:.55;cursor:not-allowed;">마감된 체험단이에요</button>'
+        : '<div class="progress"><div class="bar" style="width:' + pct + '%"></div></div>' +
+          '<button type="button" class="progress-label progress-label-link" data-action="view-applicants" data-campaign="' + c.id + '">' + filled + " / " + c.recruit_count + "명 신청</button>" +
+          '<button class="btn btn-primary btn-block" data-action="open-apply" data-campaign="' + c.id + '">신청하기</button>') +
+      "</article>"
+    );
+  }
+
+  function renderMyStatus() {
+    return (
+      '<section class="my-status">' +
+      "<h2>수정/주문번호 입력</h2>" +
+      '<p class="notice" style="margin:8px 0 14px;">연락처 조회 후, 주문 번호 필수 입력해야 정산가능</p>' +
+      '<form class="lookup-form" data-action="lookup-form">' +
+      '<input type="tel" inputmode="numeric" id="lookup-phone" placeholder="연락처로 조회 (예: 010-1234-5678)" required>' +
+      '<button class="btn btn-primary" type="submit">조회</button>' +
+      "</form>" +
+      '<div id="lookup-results"></div>' +
+      "</section>"
+    );
+  }
+
+  function renderLookupResults(items) {
+    var wrap = document.getElementById("lookup-results");
+    if (!wrap) return;
+    if (!items.length) {
+      wrap.innerHTML = '<div class="empty">해당 연락처로 신청한 내역이 없어요.</div>';
+      return;
+    }
+    wrap.innerHTML = items.map(function (a) {
+      var body = "";
+      if (a.status === "assigned") {
+        body =
+          '<p class="notice">배정이 확정됐어요. 실제로 상품을 구매한 뒤 주문번호를 등록해주세요.</p>' +
+          '<form class="inline-form" data-action="submit-order" data-applicant="' + a.id + '">' +
+          '<input type="text" inputmode="numeric" name="orderNumber" placeholder="주문번호 입력" required>' +
+          '<button class="btn btn-sm btn-primary" type="submit">구매 완료 등록</button>' +
+          "</form>";
+      } else if (a.status === "purchased") {
+        body = '<p class="notice-success">주문번호가 등록됐어요. 정산 처리를 기다려주세요.</p>';
+      } else if (a.status === "reviewed") {
+        body = '<p class="notice">리뷰까지 확인됐어요. 정산 처리를 기다려주세요.</p>';
+      } else if (a.status === "paid") {
+        body = '<p class="notice">정산까지 완료됐어요. 참여해주셔서 감사합니다.</p>';
+      }
+      var selfControls = "";
+      var infoEditor = "";
+      if (a.status !== "paid") {
+        if (UI.editingApplicantId === a.id) {
+          var qtyField = "";
+          if ((a.max_quantity || 1) > 1) {
+            var qOpts = "";
+            for (var qi = 1; qi <= a.max_quantity; qi++) {
+              qOpts += '<option value="' + qi + '"' + (qi === (a.quantity || 1) ? " selected" : "") + '>' + qi + "개 · " + fmtWon(payout(a, qi, a.delivery_type)) + "</option>";
+            }
+            qtyField = '<div class="field"><label>신청 수량</label><select name="quantity">' + qOpts + "</select></div>";
+          }
+          infoEditor =
+            '<form data-action="update-info-form" data-applicant="' + a.id + '" style="margin-top:10px;">' +
+            '<div class="field"><label>이름</label><input name="name" value="' + esc(a.name || "") + '" required></div>' +
+            '<div class="field"><label>연락처</label><input id="edit-phone" name="phone" type="tel" inputmode="numeric" value="' + esc(DATA.lookupPhone || "") + '" required></div>' +
+            '<div class="field"><label>배송지 주소</label><input name="address" value="' + esc(a.address || "") + '" required></div>' +
+            '<div class="field"><label>은행</label><input name="bank" value="' + esc(a.bank || "") + '" required></div>' +
+            '<div class="field"><label>계좌번호 (-없이)</label><input id="edit-account" name="account" type="tel" inputmode="numeric" value="' + esc(a.account || "") + '" required></div>' +
+            qtyField +
+            '<div class="modal-actions" style="margin-top:2px;"><button type="button" class="btn" data-action="cancel-edit-my-applicant">취소</button><button class="btn btn-primary" type="submit">저장</button></div>' +
+            "</form>";
+        } else {
+          selfControls =
+            '<div style="display:flex;gap:8px;margin-top:8px;">' +
+            '<button type="button" class="btn btn-sm" data-action="edit-my-applicant" data-applicant="' + a.id + '">수정</button>' +
+            '<button type="button" class="btn btn-sm" style="color:var(--critical);" data-action="delete-my-applicant" data-applicant="' + a.id + '">신청 취소</button>' +
+            "</div>";
+        }
+      }
+      // 신청자가 쿠팡에서 자기가 신청한 캠페인을 정확히 찾아 주문할 수 있도록, 검색 키워드(복사 가능)와
+      // 상세 이미지를 같이 보여준다. 이미지는 크게 넣으면 부담스러우니 작게 두고, 확대 버튼으로만 크게 본다.
+      var thumb = a.image_url
+        ? '<div class="result-thumb"><img src="' + esc(a.image_url) + '" alt="' + esc(a.product) + '">' + ZOOM_BTN(a.image_url) + "</div>"
+        : "";
+      return (
+        '<div class="result-card">' +
+        '<div style="display:flex;gap:12px;align-items:flex-start;">' +
+        '<div style="flex:1;min-width:0;">' +
+        '<div class="head"><span class="product">' + esc(a.product) + '</span><span class="pill pill-' + a.status + '">' + STATUS_LABEL[a.status] + "</span></div>" +
+        '<div style="font-size:.82rem;color:var(--ink-soft)">' + esc(a.seller) + " · 지급액 " + fmtWon(payout(a, a.quantity, a.delivery_type)) + ((a.quantity || 1) > 1 ? " (" + a.quantity + "개)" : "") + (a.delivery_type ? " · " + deliveryTypeLabel(a.delivery_type) : "") + "</div>" +
+        "</div>" +
+        thumb +
+        "</div>" +
+        (a.keyword ? renderKeywordBox(a.keyword) : "") +
+        selfControls +
+        infoEditor +
+        body +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  function renderQuantityField(c) {
+    var opts = "";
+    for (var i = 1; i <= c.max_quantity; i++) {
+      opts += '<option value="' + i + '">' + i + "개 · 지급액 " + payoutRangeLabel(c, i) + "</option>";
+    }
+    return '<div class="field"><label for="ap-quantity">신청 수량</label><select id="ap-quantity" name="quantity">' + opts + "</select></div>";
+  }
+
+  // 관리자 캠페인 등록/수정 폼에서 쓰는 "수량별 가격" 입력 UI.
+  // idPrefix는 nc(새 캠페인)/ec(캠페인 수정)로 폼끼리 겹치지 않게 구분한다.
+  function renderPriceTierRow(index, value) {
+    return (
+      '<div class="qty-tier-row" style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">' +
+      '<span class="qty-tier-label" style="width:44px;flex-shrink:0;color:var(--ink-faint);font-size:.85rem;">' + (index + 1) + "개</span>" +
+      '<input class="qty-price-input" type="text" inputmode="numeric" placeholder="예: 12,900" value="' + esc(value || "") + '" required style="flex:1;">' +
+      '<button type="button" class="btn btn-sm" data-action="remove-price-tier" style="padding:4px 9px;" aria-label="이 수량 삭제">✕</button>' +
+      "</div>"
+    );
+  }
+  function renderPriceTierField(idPrefix, prices) {
+    var list = prices && prices.length ? prices : [""];
+    var rows = list.map(function (p, i) { return renderPriceTierRow(i, p === "" || p == null ? "" : formatMoney(String(p))); }).join("");
+    return (
+      '<div class="field">' +
+      '<label>수량별 가격(원) <span style="font-weight:400;color:var(--ink-faint);">(수수료 제외한 상품 금액 · 여러 개 사면 할인되면 수량마다 다르게 입력하세요)</span></label>' +
+      '<div class="qty-tier-list" id="' + idPrefix + '-tiers">' + rows + "</div>" +
+      '<button type="button" class="btn btn-sm" data-action="add-price-tier" data-target="' + idPrefix + '-tiers">+ 수량 추가</button>' +
+      "</div>"
+    );
+  }
+
+  function renderApplyModal() {
+    if (!UI.applyCampaignId) return "";
+    var c = DATA.campaigns.filter(function (x) { return String(x.id) === String(UI.applyCampaignId); })[0];
+    if (!c) return "";
+    return (
+      '<div class="modal-backdrop" data-action="close-modal">' +
+      '<div class="modal" role="dialog" aria-modal="true" data-action="noop">' +
+      "<h2>" + esc(c.product) + "</h2>" +
+      (c.image_url ? '<div class="camp-image"><img src="' + esc(c.image_url) + '" alt="' + esc(c.product) + '">' + ZOOM_BTN(c.image_url) + "</div>" : "") +
+      (c.option_name ? '<p class="option-name" style="margin-bottom:14px;"><span class="option-label">옵션 : </span>' + esc(c.option_name) + "</p>" : "") +
+      (c.note ? '<div style="background:var(--warning-soft);color:var(--warning);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:.85rem;line-height:1.5;"><strong>비고</strong> · ' + esc(c.note) + "</div>" : "") +
+      (c.keyword ? renderKeywordBox(c.keyword) : "") +
+      (isMixedDelivery(c) ? '<p style="font-size:.82rem;color:var(--ink-soft);background:var(--surface-2);border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.5;">실배송/빈박스는 선착순으로 자동 배정돼요. 신청 후 "연락처로 조회"에서 결과를 확인할 수 있어요.</p>' : "") +
+      '<form data-action="apply-form" data-campaign="' + c.id + '">' +
+      (c.max_quantity > 1 ? renderQuantityField(c) : "") +
+      '<div class="field"><label for="ap-name">이름</label><input id="ap-name" name="name" required></div>' +
+      '<div class="field"><label for="ap-phone">연락처</label><input id="ap-phone" name="phone" type="tel" inputmode="numeric" placeholder="010-0000-0000" required></div>' +
+      '<div class="field"><label for="ap-address">배송지 주소</label><input id="ap-address" name="address" required></div>' +
+      '<div class="field"><label for="ap-bank">은행</label><input id="ap-bank" name="bank" required></div>' +
+      '<div class="field"><label for="ap-account">계좌번호 (-없이)</label><input id="ap-account" name="account" type="tel" inputmode="numeric" placeholder="숫자만 입력" required></div>' +
+      '<div class="modal-actions"><button type="button" class="btn" data-action="close-modal">취소</button><button type="submit" class="btn btn-primary">신청 제출</button></div>' +
+      "</form></div></div>"
+    );
+  }
+
+  /* ---- Admin ---- */
+  function renderAdmin() {
+    if (!UI.adminSession) {
+      return (
+        '<div class="login-panel"><h2>담당자 로그인</h2><p>Supabase에 등록된 담당자 계정으로 로그인하세요.</p>' +
+        (UI.loginError ? '<div class="error-text" style="margin-bottom:12px;">' + esc(UI.loginError) + "</div>" : "") +
+        '<button type="button" class="btn btn-block" data-action="google-login" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;">' +
+        '<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.6 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.4 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.4 6.1 29.5 4 24 4c-7.4 0-13.8 4.1-17.1 10.1z"/><path fill="#4CAF50" d="M24 44c5.3 0 10.1-2 13.7-5.4l-6.3-5.3C29.4 35.1 26.8 36 24 36c-5.3 0-9.8-3.4-11.4-8.1l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3-3.4 5.5-6.3 6.9l6.3 5.3C38.7 37 44 31.4 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>' +
+        "Google로 로그인</button>" +
+        '<div style="text-align:center;color:var(--ink-faint);font-size:.78rem;margin-bottom:16px;">또는 이메일로 로그인</div>' +
+        '<form data-action="login-form">' +
+        '<div class="field"><label>이메일</label><input type="email" id="login-email" required></div>' +
+        '<div class="field"><label>비밀번호</label><input type="password" id="login-password" required></div>' +
+        '<button class="btn btn-primary btn-block" type="submit">로그인</button></form></div>'
+      );
+    }
+    if (DATA.loadingAdmin) return '<div class="spinner-note">불러오는 중…</div>';
+    if (!DATA.isAdmin) {
+      return '<div class="error-text">이 계정은 담당자로 등록돼 있지 않아요. Supabase의 admins 테이블에 계정을 추가해주세요.</div>' +
+        '<button class="btn" style="margin-top:12px;" data-action="logout">로그아웃</button>';
+    }
+    var all = DATA.adminCampaigns;
+    var applicants = all.reduce(function (acc, c) { return acc.concat((c.applicants || []).map(function (a) { return Object.assign({}, a, { campaign: c }); })); }, []);
+    var pending = applicants.filter(isSettleEligible);
+    var pendingSum = pending.reduce(function (s, a) { return s + payout(a.campaign, a.quantity, a.delivery_type); }, 0);
+    var recruitingCount = all.filter(function (c) { return campaignIsOpen(c); }).length;
+    var closedCount = all.length - recruitingCount;
+    var tab = UI.campaignTab === "closed" ? "closed" : "open";
+    var view = UI.adminView === "ledger" ? "ledger" : (UI.adminView === "transfer" ? "transfer" : (UI.adminView === "clients" ? "clients" : "campaigns"));
+
+    return (
+      '<div class="admin-toolbar" style="justify-content:space-between;">' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn btn-sm ' + (view === "campaigns" ? "btn-primary" : "") + '" data-action="admin-view" data-view="campaigns">캠페인 관리</button>' +
+      '<button class="btn btn-sm ' + (view === "ledger" ? "btn-primary" : "") + '" data-action="admin-view" data-view="ledger">지급대장</button>' +
+      '<button class="btn btn-sm ' + (view === "transfer" ? "btn-primary" : "") + '" data-action="admin-view" data-view="transfer">다계좌 이체</button>' +
+      '<button class="btn btn-sm ' + (view === "clients" ? "btn-primary" : "") + '" data-action="admin-view" data-view="clients">업체 관리</button>' +
+      "</div>" +
+      '<button class="btn" data-action="logout">로그아웃</button></div>' +
+      (view === "ledger" ? renderLedger()
+        : view === "transfer" ? renderTransferView(all)
+        : view === "clients" ? renderClientsAdmin()
+        : (
+          '<div style="max-width:260px;">' + statCard("정산 대기 금액", fmtWon(pendingSum)) + "</div>" +
+          renderAdminCampaigns(all, recruitingCount, closedCount, tab)
+        ))
+    );
+  }
+
+  function flattenApplicants(all) {
+    return (all || []).reduce(function (acc, c) { return acc.concat((c.applicants || []).map(function (a) { return Object.assign({}, a, { campaign: c }); })); }, []);
+  }
+
+  // 은행 다계좌 이체는 한 파일에 15건까지만 올릴 수 있어서, 정산 대기 중인 신청자를
+  // 캠페인 단위로 묶어 15건 내외의 파일 여러 개로 미리 나눠준다. 캠페인 하나가 중간에
+  // 두 파일로 쪼개지지 않게 하되(오래된 캠페인부터 순서대로 채움), 한 캠페인 자체가
+  // 15건을 넘으면 그 캠페인만 15건씩 끊어서 별도 파일로 만든다.
+  function computeTransferBatches(all) {
+    var byCampaign = {};
+    var order = [];
+    flattenApplicants(all).filter(isSettleEligible).forEach(function (a) {
+      var cid = a.campaign.id;
+      if (!byCampaign[cid]) { byCampaign[cid] = { campaign: a.campaign, list: [] }; order.push(cid); }
+      byCampaign[cid].list.push(a);
+    });
+    var groups = order.map(function (cid) { return byCampaign[cid]; });
+    groups.sort(function (x, y) { return new Date(x.campaign.created_at) - new Date(y.campaign.created_at); });
+
+    var batches = [];
+    var current = null;
+    function pushCurrent() { if (current && current.count > 0) batches.push(current); current = null; }
+
+    groups.forEach(function (g) {
+      if (g.list.length > 15) {
+        pushCurrent();
+        for (var i = 0; i < g.list.length; i += 15) {
+          var slice = g.list.slice(i, i + 15);
+          batches.push({ groups: [{ campaign: g.campaign, list: slice }], count: slice.length });
+        }
+        return;
+      }
+      if (current && current.count + g.list.length > 15) pushCurrent();
+      if (!current) current = { groups: [], count: 0 };
+      current.groups.push(g);
+      current.count += g.list.length;
+    });
+    pushCurrent();
+    return batches;
+  }
+
+  // 한 파일(배치) 안에서 같은 계좌번호가 여러 번 나오면 이체 수수료를 아끼려고
+  // 실제로는 한 번만 보내고 금액을 합친다. 신청 번호는 그대로 매겨서 어느
+  // 캠페인에서 온 건지 추적할 수 있게 하고, 합쳐진 줄엔 표시를 해준다.
+  // 계좌번호가 비어있으면(데이터 이상 등) 서로 합쳐지지 않도록 신청 순번을 붙여 고유하게 만든다.
+  function accountKeyFor(a, rowNum) {
+    return String((a && a.account) || "").trim() || ("__empty_" + rowNum);
+  }
+  function computeAccountDupMap(batch) {
+    var rowNums = {}; // 계좌번호 -> 이 배치 안에서의 신청 순번들
+    var rowNum = 0;
+    batch.groups.forEach(function (g) {
+      g.list.forEach(function (a) {
+        rowNum++;
+        var key = accountKeyFor(a, rowNum);
+        (rowNums[key] || (rowNums[key] = [])).push(rowNum);
+      });
+    });
+    return rowNums;
+  }
+
+  function renderTransferBatch(batch, bi) {
+    var dupMap = computeAccountDupMap(batch);
+    var rowNum = 0;
+    // 그룹(캠페인)별 헤더 + 신청 단위 행 메타데이터를 먼저 만든다.
+    var groupsMeta = batch.groups.map(function (g) {
+      var header =
+        '<tr><td colspan="5" style="padding:10px 8px 4px;font-weight:700;font-size:.82rem;color:var(--ink-soft);border-top:1px solid var(--line);">' +
+        esc(g.campaign.product) + (g.campaign.option_name ? " · " + esc(g.campaign.option_name) : "") +
+        ' <span style="font-weight:400;color:var(--ink-faint);">· ' + g.list.length + "건</span></td></tr>";
+      var rows = g.list.map(function (a) {
+        rowNum++;
+        var key = accountKeyFor(a, rowNum);
+        return { rowNum: rowNum, a: a, key: key, dupRows: dupMap[key], amt: payout(g.campaign, a.quantity, a.delivery_type) };
+      });
+      return { header: header, rows: rows };
+    });
+    // 계좌별 합산 금액 미리 계산
+    var totals = {};
+    groupsMeta.forEach(function (g) {
+      g.rows.forEach(function (r) { totals[r.key] = (totals[r.key] || 0) + r.amt; });
+    });
+    var tableBody = groupsMeta.map(function (g) {
+      var body = g.rows.map(function (r) {
+        var isDup = r.dupRows.length > 1;
+        var isFirst = isDup && r.dupRows[0] === r.rowNum;
+        var amountCell;
+        if (isFirst) {
+          amountCell =
+            '<div>' + fmtWon(totals[r.key]) + "</div>" +
+            '<div style="font-size:.68rem;color:var(--accent);font-weight:600;margin-top:2px;">' + r.dupRows.length + "건 합산(" + r.dupRows.join(", ") + "번)</div>";
+        } else if (isDup) {
+          amountCell =
+            '<div style="color:var(--ink-faint);text-decoration:line-through;">' + fmtWon(r.amt) + "</div>" +
+            '<div style="font-size:.68rem;color:var(--ink-faint);margin-top:2px;">' + r.dupRows[0] + "번에 합산</div>";
+        } else {
+          amountCell = fmtWon(r.amt);
+        }
+        return (
+          "<tr><td class=\"num\" style=\"color:var(--ink-faint);\">" + r.rowNum + "</td>" +
+          "<td>" + esc(r.a.name) + (r.a.exported ? ' <span class="pill pill-reviewed" style="font-size:.68rem;">파일 생성됨</span>' : "") + "</td>" +
+          "<td>" + esc(r.a.bank) + "</td>" +
+          '<td class="num">' + esc(r.a.account) + "</td>" +
+          '<td class="num">' + amountCell + "</td></tr>"
+        );
+      }).join("");
+      return g.header + body;
+    }).join("");
+    var dupKeyCount = Object.keys(dupMap).filter(function (k) { return dupMap[k].length > 1; }).length;
+    var actualTransferCount = Object.keys(dupMap).length;
+    return (
+      '<div class="card" style="padding:16px;margin-bottom:16px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">' +
+      '<h3 style="margin:0;">' + (bi + 1) + "차 파일 · 신청 " + batch.count + "건" + (dupKeyCount ? " · 실제 이체 " + actualTransferCount + "건" : "") + "</h3>" +
+      '<button class="btn btn-primary btn-sm" data-action="download-transfer-batch" data-batch="' + bi + '">엑셀 다운로드</button>' +
+      "</div>" +
+      (dupKeyCount ? '<p style="font-size:.78rem;color:var(--accent);margin-bottom:8px;">같은 계좌번호로 ' + dupKeyCount + '명이 중복 신청돼 있어요. 이체 수수료를 아끼도록 금액을 합쳐서 한 번만 보내도록 표시했어요.</p>' : "") +
+      '<div class="table-wrap"><table><thead><tr><th class="num">#</th><th>이름</th><th>은행</th><th class="num">계좌번호</th><th class="num">금액</th></tr></thead><tbody>' +
+      tableBody +
+      "</tbody></table></div></div>"
+    );
+  }
+
+  function renderTransferView(all) {
+    var batches = computeTransferBatches(all);
+    if (!batches.length) return '<div class="empty">지금 정산 대기 중인 신청이 없어요.</div>';
+    return (
+      '<p style="font-size:.82rem;color:var(--ink-faint);margin-bottom:14px;">정산 대기 중인 신청을 캠페인 단위로 묶어서 한 파일에 최대 15건까지 담았어요. 캠페인이 파일 중간에 잘리지 않도록 순서대로 채웠어요.</p>' +
+      batches.map(renderTransferBatch).join("")
+    );
+  }
+
+  /* ================= 업체 관리 ================= */
+  // 거래명세서의 "공급자" 정보(등록번호·대표자명·이메일)를 상호명별로 미리 저장해두는 화면.
+  // 신규 등록/수정은 같은 폼을 재사용하고, UI.editingClientId가 있으면 그 업체를 수정하는 것이다.
+  function renderClientsAdmin() {
+    var clients = DATA.clients || [];
+    return (
+      '<div style="display:flex;justify-content:flex-end;margin-bottom:14px;">' +
+      (UI.showNewClient ? "" : '<button class="btn btn-primary" data-action="open-new-client">+ 새 업체 등록</button>') +
+      "</div>" +
+      renderClientForm() +
+      (clients.length
+        ? '<div class="table-wrap"><table><thead><tr><th>상호(법인명)</th><th>등록번호</th><th>대표자명</th><th>이메일</th><th>전화번호</th><th></th></tr></thead><tbody>' +
+          clients.map(renderClientRow).join("") + "</tbody></table></div>"
+        : (UI.showNewClient ? "" : '<div class="empty">등록된 업체가 없어요.</div>'))
+    );
+  }
+
+  function renderClientRow(c) {
+    return (
+      '<tr><td><button type="button" class="progress-label-link" style="font-weight:600;" data-action="view-client-campaigns" data-client="' + c.id + '">' + esc(c.name) + "</button></td>" +
+      '<td class="num">' + esc(c.reg_number || "—") + "</td>" +
+      "<td>" + esc(c.ceo_name || "—") + "</td>" +
+      "<td>" + esc(c.email || "—") + "</td>" +
+      '<td class="num">' + esc(c.phone || "—") + "</td>" +
+      '<td style="white-space:nowrap;"><button type="button" class="btn btn-sm" data-action="edit-client" data-client="' + c.id + '">수정</button> ' +
+      '<button type="button" class="btn btn-sm" style="color:var(--critical);" data-action="delete-client" data-client="' + c.id + '">삭제</button></td></tr>'
+    );
+  }
+
+  function renderClientForm() {
+    if (!UI.showNewClient) return "";
+    var editing = UI.editingClientId ? (DATA.clients || []).filter(function (c) { return String(c.id) === String(UI.editingClientId); })[0] : null;
+    var v = editing || {};
+    return (
+      '<div class="card" style="padding:18px;margin-bottom:16px;">' +
+      "<h3>" + (editing ? "업체 정보 수정" : "새 업체 등록") + "</h3>" +
+      '<form data-action="client-form">' +
+      '<div class="field"><label>상호(법인명)</label><input name="name" required value="' + esc(v.name || "") + '"></div>' +
+      '<div class="field"><label>(사업자)등록번호</label><input name="reg" placeholder="000-00-00000" value="' + esc(v.reg_number || "") + '"></div>' +
+      '<div class="field"><label>대표자명</label><input name="ceo" value="' + esc(v.ceo_name || "") + '"></div>' +
+      '<div class="field"><label>이메일 주소</label><input name="email" type="email" value="' + esc(v.email || "") + '"></div>' +
+      '<div class="field"><label>전화번호</label><input name="phone" value="' + esc(v.phone || "") + '"></div>' +
+      '<div class="modal-actions"><button type="button" class="btn" data-action="cancel-client-form">취소</button><button type="submit" class="btn btn-primary">' + (editing ? "수정 저장" : "등록") + "</button></div>" +
+      "</form></div>"
+    );
+  }
+
+  function saveClientForm(form) {
+    var fd = new FormData(form);
+    var name = (fd.get("name") || "").toString().trim();
+    if (!name) { toast("상호를 입력해주세요.", "warn"); return; }
+    var payload = {
+      name: name,
+      reg_number: (fd.get("reg") || "").toString().trim() || null,
+      ceo_name: (fd.get("ceo") || "").toString().trim() || null,
+      email: (fd.get("email") || "").toString().trim() || null,
+      phone: (fd.get("phone") || "").toString().trim() || null,
+      updated_at: new Date().toISOString()
+    };
+    var id = UI.editingClientId;
+    setBusy(true);
+    var req = id ? sb.from("clients").update(payload).eq("id", id) : sb.from("clients").insert(payload);
+    req.then(function (res) {
+      setBusy(false);
+      if (res.error) {
+        var dup = String(res.error.message || "").toLowerCase().indexOf("duplicate") !== -1;
+        toast(dup ? "이미 등록된 상호예요. 목록에서 수정해주세요." : (res.error.message || "저장에 실패했어요."), "err");
+        return;
+      }
+      toast(id ? "업체 정보를 수정했어요." : "새 업체를 등록했어요.");
+      UI.showNewClient = false; UI.editingClientId = null;
+      loadClients();
+    }).catch(function (err) {
+      setBusy(false);
+      toast((err && err.message) || "저장에 실패했어요.", "err");
+    });
+  }
+
+  function deleteClient(id) {
+    setBusy(true);
+    sb.from("clients").delete().eq("id", id).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "삭제에 실패했어요.", "err"); return; }
+      toast("업체 정보를 삭제했어요.");
+      loadClients();
+    }).catch(function (err) {
+      setBusy(false);
+      toast((err && err.message) || "삭제에 실패했어요.", "err");
+    });
+  }
+
+  function downloadTransferBatch(bi) {
+    var batches = computeTransferBatches(DATA.adminCampaigns);
+    var batch = batches[bi];
+    if (!batch) { toast("해당 파일을 찾을 수 없어요.", "err"); return; }
+    // 같은 계좌번호는 한 줄로 합쳐서(금액 합산) 엑셀에 내보낸다 — 이체 수수료를 아끼기 위함.
+    var order = [];
+    var merged = {};
+    var ids = [];
+    var rowNum = 0;
+    batch.groups.forEach(function (g) {
+      g.list.forEach(function (a) {
+        rowNum++;
+        var key = accountKeyFor(a, rowNum);
+        if (!merged[key]) { merged[key] = { bank: a.bank, account: a.account, amount: 0 }; order.push(key); }
+        merged[key].amount += payout(g.campaign, a.quantity, a.delivery_type);
+        ids.push(a.id);
+      });
+    });
+    var rows = order.map(function (key) {
+      var m = merged[key];
+      return [m.bank, m.account, m.amount, "제품 구입비", "제품 구입비", ""];
+    });
+    var mergedCount = order.length < ids.length;
+    var ws = XLSX.utils.aoa_to_sheet(rows);
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    var filename = todayISO().replace(/-/g, "") + "_다계좌이체_" + (bi + 1) + "차.xls";
+    XLSX.writeFile(wb, filename, { bookType: "biff8" });
+    markExported(ids).then(function () { loadAdminData(); });
+    toast((bi + 1) + "차 파일을 다운로드했어요." + (mergedCount ? " (중복 계좌 합산 적용)" : ""));
+  }
+
+  function computeLedgerRows() {
+    var applicants = flattenApplicants(DATA.adminCampaigns);
+    var month = UI.ledgerMonth || new Date().toISOString().slice(0, 7);
+    var status = UI.ledgerStatus === "all" ? "all" : "paid";
+    var q = (UI.ledgerSearchQuery || "").trim().toLowerCase();
+    var qDigits = q.replace(/\D/g, "");
+    var rows = applicants.filter(function (a) {
+      if (status === "paid") {
+        if (!(a.status === "paid" && String(a.paid_at || "").slice(0, 7) === month)) return false;
+      } else if (String(a.applied_at || "").slice(0, 7) !== month) {
+        return false;
+      }
+      if (!q) return true;
+      var nameMatch = (a.name || "").toLowerCase().indexOf(q) !== -1;
+      var phoneDigits = String(a.phone || "").replace(/\D/g, "");
+      var phoneMatch = qDigits ? phoneDigits.indexOf(qDigits) !== -1 : false;
+      return nameMatch || phoneMatch;
+    }).sort(function (x, y) {
+      var kx = status === "paid" ? (x.paid_at || "") : (x.applied_at || "");
+      var ky = status === "paid" ? (y.paid_at || "") : (y.applied_at || "");
+      return String(ky).localeCompare(String(kx));
+    });
+    return { rows: rows, month: month, status: status };
+  }
+
+  function renderLedger() {
+    var ledger = computeLedgerRows();
+    var rows = ledger.rows, month = ledger.month, status = ledger.status;
+    return (
+      '<div class="card" style="padding:18px;margin-top:16px;">' +
+      '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;">' +
+      '<div class="field" style="margin-bottom:0;"><label>기간</label><input type="month" id="ledger-month" value="' + esc(month) + '"></div>' +
+      '<div class="field" style="margin-bottom:0;"><label>대상</label><select id="ledger-status">' +
+      '<option value="paid"' + (status === "paid" ? " selected" : "") + '>입금완료만</option>' +
+      '<option value="all"' + (status === "all" ? " selected" : "") + '>전체 상태</option>' +
+      "</select></div>" +
+      '<div class="field" style="margin-bottom:0;min-width:180px;"><label>이름·연락처 검색</label><input type="text" id="ledger-search" placeholder="이름 또는 연락처" value="' + esc(UI.ledgerSearchQuery || "") + '"></div>' +
+      '<button class="btn btn-primary" data-action="download-ledger-excel" ' + (rows.length ? "" : "disabled") + '>엑셀로 내보내기</button>' +
+      "</div>" +
+      '<div id="ledger-results">' + renderLedgerBody(ledger) + "</div>" +
+      "</div>"
+    );
+  }
+
+  // 검색어 입력 중에는 이 함수만 다시 호출해서 #ledger-results 안쪽만 갈아끼운다.
+  // 검색창(input)은 절대 다시 그리지 않아야 한글 조합이 깨지지 않는다.
+  function renderLedgerBody(ledger) {
+    var rows = ledger.rows, month = ledger.month, status = ledger.status;
+    var total = rows.reduce(function (s, a) { return s + payout(a.campaign, a.quantity, a.delivery_type); }, 0);
+    var tableRows = rows.map(function (a, idx) {
+      return (
+        "<tr><td class=\"num\" style=\"color:var(--ink-faint);\">" + (idx + 1) + "</td>" +
+        '<td class="num" style="white-space:nowrap;">' + esc(status === "paid" ? fmtLedgerDate(a.paid_at) : fmtAppliedAt(a.applied_at)) + "</td>" +
+        "<td>" + esc(a.name) + "</td>" +
+        '<td class="num">' + esc(a.phone) + "</td>" +
+        "<td>" + esc((a.campaign && a.campaign.product) || "") + (a.campaign && a.campaign.option_name ? " · " + esc(a.campaign.option_name) : "") + "</td>" +
+        '<td class="num">' + esc(a.order_number || "—") + "</td>" +
+        '<td class="num">' + fmtWon(payout(a.campaign, a.quantity, a.delivery_type)) + "</td>" +
+        "<td>" + esc(a.bank) + " " + esc(a.account) + "</td>" +
+        '<td><span class="pill pill-' + a.status + '">' + STATUS_LABEL[a.status] + "</span></td>" +
+        "</tr>"
+      );
+    }).join("");
+    return (
+      '<p style="font-size:.85rem;color:var(--ink-soft);margin:14px 0 4px;">' + month + " · " + rows.length + "건 · 합계 " + fmtWon(total) + "</p>" +
+      (rows.length
+        ? '<div class="table-wrap"><table><thead><tr><th class="num">#</th><th class="num">' + (status === "paid" ? "지급일" : "신청일시") + '</th><th>이름</th><th class="num">연락처</th><th>상품명</th><th class="num">주문번호</th><th class="num">지급액</th><th>계좌</th><th>상태</th></tr></thead><tbody>' + tableRows + "</tbody></table></div>"
+        : '<div class="empty">' + ((UI.ledgerSearchQuery || "").trim() ? "검색 결과가 없어요." : "이 기간에 해당하는 기록이 없어요.") + "</div>")
+    );
+  }
+
+  function updateLedgerResults() {
+    var wrap = document.getElementById("ledger-results");
+    if (!wrap) return;
+    wrap.innerHTML = renderLedgerBody(computeLedgerRows());
+  }
+
+  function fmtLedgerDate(iso) {
+    if (!iso) return "—";
+    try {
+      var d = new Date(iso);
+      var pad = function (n) { return String(n).padStart(2, "0"); };
+      return String(d.getFullYear()).slice(2) + "." + pad(d.getMonth() + 1) + "." + pad(d.getDate());
+    } catch (e) { return String(iso).slice(0, 10); }
+  }
+
+  function isSettleEligible(a) { return a.status === "purchased" || a.status === "reviewed"; }
+
+  function findCampaign(id) {
+    return DATA.adminCampaigns.filter(function (c) { return String(c.id) === String(id); })[0];
+  }
+
+  function campaignIsOpen(c) {
+    var filled = (c.applicants || []).length >= c.recruit_count;
+    var expired = daysUntil(c.deadline) < 0;
+    return !(filled || expired || c.manually_closed);
+  }
+
+  function statCard(label, value) {
+    return '<div class="stat-card"><div class="label">' + esc(label) + '</div><div class="value">' + esc(value) + "</div></div>";
+  }
+
+  function renderAdminCampaigns(all, recruitingCount, closedCount, tab) {
+    return (
+      '<div class="admin-toolbar" style="justify-content:space-between;align-items:center;">' +
+      '<div style="display:flex;gap:10px;">' +
+      '<button type="button" class="btn ' + (tab === "open" ? "btn-primary" : "") + '" style="font-size:1.02rem;padding:12px 22px;font-weight:700;" data-action="campaign-tab" data-tab="open">진행중 · ' + recruitingCount + "</button>" +
+      '<button type="button" class="btn ' + (tab === "closed" ? "btn-primary" : "") + '" style="font-size:1.02rem;padding:12px 22px;font-weight:700;" data-action="campaign-tab" data-tab="closed">마감 · ' + closedCount + "</button>" +
+      "</div>" +
+      '<button class="btn btn-primary" data-action="open-new-campaign">+ 새 캠페인 등록</button>' +
+      "</div>" +
+      '<div style="margin-top:12px;max-width:340px;">' +
+      '<input type="text" id="camp-search" placeholder="상품명 또는 업체명 검색" value="' + esc(UI.campSearchQuery || "") + '" style="width:100%;border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);border-radius:7px;padding:9px 11px;font-weight:500;">' +
+      "</div>" +
+      renderNewCampaignForm() +
+      '<div id="camp-list-results" style="margin-top:22px;">' + renderCampListBody(all, tab) + "</div>"
+    );
+  }
+
+  // 검색어 입력 중에는 이 함수만 다시 호출해서 #camp-list-results 안쪽만 갈아끼운다.
+  // 검색창(input)은 절대 다시 그리지 않아야 한글 조합이 깨지지 않는다.
+  function renderCampListBody(all, tab) {
+    var openList = all.filter(campaignIsOpen);
+    var closedList = all.filter(function (c) { return !campaignIsOpen(c); });
+    var shown = tab === "open" ? openList : closedList;
+    var q = (UI.campSearchQuery || "").trim().toLowerCase();
+    if (q) {
+      shown = shown.filter(function (c) {
+        return (c.product || "").toLowerCase().indexOf(q) !== -1 ||
+          (c.option_name || "").toLowerCase().indexOf(q) !== -1 ||
+          (c.seller || "").toLowerCase().indexOf(q) !== -1;
+      });
+    }
+    return (
+      shown.length
+        ? shown.slice().reverse().map(renderCampRow).join("")
+        : '<div class="empty">' + (q ? "검색 결과가 없어요." : (tab === "open" ? "모집중인 캠페인이 없어요." : "마감된 캠페인이 없어요.")) + "</div>"
+    );
+  }
+
+  function updateCampListResults() {
+    var wrap = document.getElementById("camp-list-results");
+    if (!wrap) return;
+    var all = DATA.adminCampaigns || [];
+    var tab = UI.campaignTab === "closed" ? "closed" : "open";
+    wrap.innerHTML = renderCampListBody(all, tab);
+  }
+
+  function renderNewCampaignForm() {
+    if (!UI.showNewCampaign) return "";
+    return (
+      '<div class="card" style="padding:18px;margin-bottom:16px;">' +
+      "<h3>새 캠페인 등록</h3>" +
+      '<form data-action="create-campaign-form">' +
+      '<div class="field"><label>셀러 업체</label><input name="seller" required></div>' +
+      '<div class="field"><label>상품명</label><input name="product" required></div>' +
+      '<div class="field"><label>옵션명 <span style="font-weight:400;color:var(--ink-faint);">(선택)</span></label><input name="optionName" placeholder="예: 1kg / 블루베리맛 (없으면 비워두세요)"></div>' +
+      '<div class="field"><label>검색 키워드</label><input name="keyword" placeholder="쿠팡 검색창에 입력할 키워드" required></div>' +
+      renderPriceTierField("nc", []) +
+      '<div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;">' +
+      '<input type="checkbox" id="nc-mixed-toggle" data-action="toggle-mixed" data-single="nc-single-block" data-mixed="nc-mixed-block"> 빈박스와 실배송을 함께 진행' +
+      "</label></div>" +
+      '<div id="nc-single-block">' +
+      '<div class="field"><label>수수료</label><select id="nc-fee" name="fee">' +
+      '<option value="1000" selected>빈박스 · 1,000원</option>' +
+      '<option value="0">실배송 · 0원</option>' +
+      "</select></div>" +
+      '<div class="field"><label>모집 인원</label><input name="recruitCount" type="number" min="1"></div>' +
+      "</div>" +
+      '<div id="nc-mixed-block" hidden>' +
+      '<div class="field"><label>실배송 목표 인원 <span style="font-weight:400;color:var(--ink-faint);">(수수료 +0원)</span></label><input name="realTarget" type="number" min="0" value="0"></div>' +
+      '<div class="field"><label>빈박스 목표 인원 <span style="font-weight:400;color:var(--ink-faint);">(수수료 +1,000원)</span></label><input name="emptyTarget" type="number" min="0" value="0"></div>' +
+      "</div>" +
+      '<div class="field"><label>비고 <span style="font-weight:400;color:var(--ink-faint);">(선택)</span></label><input name="note" placeholder="예: 협의 필요, 택배비 별도"></div>' +
+      '<div class="field"><label>상품 이미지 <span style="font-weight:400;color:var(--ink-faint);">(선택)</span></label><input type="file" name="image" accept="image/*"></div>' +
+      '<div class="modal-actions"><button type="button" class="btn" data-action="close-new-campaign">취소</button><button type="submit" class="btn btn-primary">등록</button></div>' +
+      "</form></div>"
+    );
+  }
+
+  function renderCampRow(c) {
+    var open = campaignIsOpen(c);
+    var expanded = !!UI.expanded[c.id];
+    var filled = (c.applicants || []).length;
+    var pendingCount = (c.applicants || []).filter(isSettleEligible).length;
+    var paidCount = (c.applicants || []).filter(function (a) { return a.status === "paid"; }).length;
+    var unpurchasedCount = (c.applicants || []).filter(function (a) { return a.status === "assigned"; }).length;
+    var fullySettled = !pendingCount && paidCount > 0;
+    var mixed = isMixedDelivery(c);
+    var realCount = mixed ? (c.applicants || []).filter(function (a) { return a.delivery_type === "real"; }).length : 0;
+    var emptyCount = mixed ? (c.applicants || []).filter(function (a) { return a.delivery_type === "empty"; }).length : 0;
+    return (
+      '<div class="camp-row">' +
+      '<div class="camp-row-head" data-action="toggle-expand" data-campaign="' + c.id + '" role="button" tabindex="0" aria-expanded="' + (expanded ? "true" : "false") + '">' +
+      (c.image_url ? '<img class="camp-row-thumb" src="' + esc(c.image_url) + '" alt="">' : "") +
+      '<span class="pill pill-' + (open ? "recruiting" : "closed") + '">' + (open ? "모집중" : "마감") + "</span>" +
+      (fullySettled
+        ? '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;">' +
+          '<span class="pill pill-paid">정산완료</span>' +
+          (unpurchasedCount ? '<span class="warn-tag" style="font-size:.72rem;">미구매 ' + unpurchasedCount + "명</span>" : "") +
+          "</div>"
+        : "") +
+      '<div class="name"><div class="p">' + esc(c.product) + (c.option_name ? ' <span style="font-weight:400;color:var(--ink-soft);">· ' + esc(c.option_name) + "</span>" : "") + '</div><div class="s">' + esc(c.seller) + " · 지급액 " + payoutRangeLabel(c, 1) + (c.keyword ? " · 키워드 " + esc(c.keyword) : "") + (c.note ? ' <span style="color:var(--warning);">· 비고: ' + esc(c.note) + "</span>" : "") + "</div></div>" +
+      '<div class="camp-row-meta">' + filled + "/" + c.recruit_count + "명" +
+      (mixed ? ' <span style="color:var(--ink-faint);">(실배송 ' + realCount + "/" + c.real_delivery_target + " · 빈박스 " + emptyCount + "/" + c.empty_box_target + ")</span>" : "") +
+      (pendingCount ? ' · <span class="warn-tag">정산대기 ' + pendingCount + '건</span>' : "") + "</div>" +
+      '<span class="camp-row-date">등록 ' + esc(String(c.created_at || "").slice(0, 10)) + "</span>" +
+      '<button class="btn btn-sm btn-primary" data-action="share-campaign" data-campaign="' + c.id + '">공유</button>' +
+      '<button class="btn btn-sm" data-action="copy-share-link" data-campaign="' + c.id + '" title="공유 창이 안 뜨거나 오류가 날 때 이 버튼으로 링크만 복사하세요">링크 복사</button>' +
+      '<button class="btn btn-sm" data-action="open-invoice" data-campaign="' + c.id + '">거래명세서</button>' +
+      '<button class="btn btn-sm" data-action="edit-campaign" data-campaign="' + c.id + '">수정</button>' +
+      '<button class="btn btn-sm" data-action="delete-campaign" data-campaign="' + c.id + '">삭제</button>' +
+      (open ? '<button class="btn btn-sm" data-action="force-close" data-campaign="' + c.id + '">지금 마감</button>' : "") +
+      '<span class="expand-caret">' + (expanded ? "▲" : "▼") + "</span>" +
+      "</div>" +
+      (UI.editingCampaignId === c.id ? renderEditCampaignForm(c) : (expanded ? renderCampDetail(c) : "")) +
+      "</div>"
+    );
+  }
+
+  function renderEditCampaignForm(c) {
+    return (
+      '<div class="camp-detail">' +
+      '<form data-action="edit-campaign-form" data-campaign="' + c.id + '">' +
+      '<div class="field"><label>셀러 업체</label><input name="seller" value="' + esc(c.seller) + '" required></div>' +
+      '<div class="field"><label>상품명</label><input name="product" value="' + esc(c.product) + '" required></div>' +
+      '<div class="field"><label>옵션명 <span style="font-weight:400;color:var(--ink-faint);">(선택)</span></label><input name="optionName" value="' + esc(c.option_name || "") + '"></div>' +
+      '<div class="field"><label>검색 키워드</label><input name="keyword" value="' + esc(c.keyword || "") + '" required></div>' +
+      renderPriceTierField("ec", c.quantity_prices && c.quantity_prices.length ? c.quantity_prices : [c.unit_price]) +
+      '<div class="field"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;">' +
+      '<input type="checkbox" id="ec-mixed-toggle" data-action="toggle-mixed" data-single="ec-single-block" data-mixed="ec-mixed-block"' + (isMixedDelivery(c) ? " checked" : "") + '> 빈박스와 실배송을 함께 진행' +
+      "</label></div>" +
+      '<div id="ec-single-block"' + (isMixedDelivery(c) ? " hidden" : "") + '>' +
+      '<div class="field"><label>수수료</label><select id="ec-fee" name="fee">' +
+      '<option value="1000"' + (Number(c.fee) === 0 ? "" : " selected") + '>빈박스 · 1,000원</option>' +
+      '<option value="0"' + (Number(c.fee) === 0 ? " selected" : "") + '>실배송 · 0원</option>' +
+      "</select></div>" +
+      '<div class="field"><label>모집 인원</label><input name="recruitCount" type="number" min="1" value="' + c.recruit_count + '"></div>' +
+      "</div>" +
+      '<div id="ec-mixed-block"' + (isMixedDelivery(c) ? "" : " hidden") + '>' +
+      '<div class="field"><label>실배송 목표 인원 <span style="font-weight:400;color:var(--ink-faint);">(수수료 +0원)</span></label><input name="realTarget" type="number" min="0" value="' + (c.real_delivery_target || 0) + '"></div>' +
+      '<div class="field"><label>빈박스 목표 인원 <span style="font-weight:400;color:var(--ink-faint);">(수수료 +1,000원)</span></label><input name="emptyTarget" type="number" min="0" value="' + (c.empty_box_target || 0) + '"></div>' +
+      "</div>" +
+      '<div class="field"><label>비고 <span style="font-weight:400;color:var(--ink-faint);">(선택)</span></label><input name="note" value="' + esc(c.note || "") + '" placeholder="예: 협의 필요, 택배비 별도"></div>' +
+      (c.image_url ? '<div class="image-preview"><img src="' + esc(c.image_url) + '" alt=""><span>현재 이미지 (새로 선택하면 교체됩니다)</span></div>' : "") +
+      '<div class="field"><label>상품 이미지 <span style="font-weight:400;color:var(--ink-faint);">(선택)</span></label><input type="file" name="image" accept="image/*"></div>' +
+      '<div class="modal-actions"><button type="button" class="btn" data-action="cancel-edit-campaign">취소</button><button type="submit" class="btn btn-primary">저장</button></div>' +
+      "</form></div>"
+    );
+  }
+
+  // 업체 하나가 캠페인을 여러 개 동시에 맡기는 경우, 캠페인마다 따로 거래명세서를 뽑는 번거로움이
+  // 있어서 여러 캠페인을 골라 한 장으로 합쳐 발행할 수 있게 한다. 캠페인이 1개여도 그대로 동작한다.
+  function invoiceTitleLabel(camps) {
+    if (camps.length === 1) return esc(camps[0].product) + (camps[0].option_name ? " · " + esc(camps[0].option_name) : "");
+    var names = camps.map(function (c) { return c.product; });
+    var shown = names.slice(0, 2).map(esc).join(", ");
+    return shown + (names.length > 2 ? " 외 " + (names.length - 2) + "건" : "") + " · 총 " + camps.length + "건 통합";
+  }
+
+  function renderInvoiceModal() {
+    var camps = (UI.invoiceCampaignIds || []).map(findCampaign).filter(Boolean);
+    if (!camps.length) return "";
+    var def = UI.invoiceDefaults || {};
+    var lines = camps.reduce(function (acc, c) { return acc.concat(computeInvoiceLines(c)); }, []);
+    var grandTotal = lines.reduce(function (s, l) { return s + l.total; }, 0);
+    var dp = splitInvoiceDate(def.date);
+
+    var lineRows = lines.map(function (l) {
+      return (
+        '<tr><td class="inv-date-y">' + esc(dp.y) + '</td><td class="inv-date-m">' + esc(dp.m) + '</td><td class="inv-date-d">' + esc(dp.d) + "</td>" +
+        '<td style="text-align:left;">' + esc(l.name) + "</td>" +
+        "<td>" + l.count + "</td>" +
+        "<td>" + esc(l.unit) + "</td>" +
+        '<td style="text-align:right;">' + l.unitPrice.toLocaleString("ko-KR") + "</td>" +
+        '<td style="text-align:right;">' + l.vat.toLocaleString("ko-KR") + "</td>" +
+        '<td style="text-align:right;">' + l.total.toLocaleString("ko-KR") + "</td>" +
+        "<td></td></tr>"
+      );
+    }).join("");
+    var emptyRow = '<tr><td class="inv-date-y"></td><td class="inv-date-m"></td><td class="inv-date-d"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
+    for (var i = lines.length; i < 6; i++) lineRows += emptyRow;
+
+    return (
+      '<div class="modal-backdrop invoice-overlay" data-action="close-invoice">' +
+      '<div class="invoice-dialog" data-action="noop">' +
+      '<h2 style="margin-bottom:14px;">거래명세서 · ' + invoiceTitleLabel(camps) + "</h2>" +
+      '<div class="invoice-form-grid">' +
+      '<div class="field"><label>공급자 상호(회사명)</label><input id="inv-input-name" list="client-name-list" value="' + esc(def.name || "") + '" placeholder="예: 픽더프레시"></div>' +
+      '<div class="field"><label>공급자 등록번호</label><input id="inv-input-reg" value="' + esc(def.reg || "") + '" placeholder="000-00-00000"></div>' +
+      '<div class="field"><label>공급자 대표자명</label><input id="inv-input-ceo" value="' + esc(def.ceo || "") + '"></div>' +
+      '<div class="field"><label>공급자 이메일</label><input id="inv-input-email" value="' + esc(def.email || "") + '"></div>' +
+      '<div class="field"><label>거래일자</label><input id="inv-input-date" type="date" value="' + esc(def.date || todayISO()) + '"></div>' +
+      '<div class="field" style="display:flex;align-items:flex-end;"><button type="button" class="btn btn-sm" data-action="lookup-client-fill">저장된 정보 불러오기</button></div>' +
+      "</div>" +
+      '<p style="font-size:.76rem;color:var(--ink-faint);margin-bottom:4px;">상호를 입력하면 예전에 저장해둔 등록번호·대표자명·이메일을 불러올 수 있어요. 다운로드하면 이번에 입력한 정보가 다음을 위해 자동으로 저장돼요.</p>' +
+      '<datalist id="client-name-list">' + (DATA.clientNames || []).map(function (n) { return '<option value="' + esc(n) + '">'; }).join("") + "</datalist>" +
+      '<div class="invoice-scroll"><div id="invoice-render-target" style="background:#fff;padding:28px;width:900px;box-sizing:content-box;">' +
+      '<div class="invoice-wrap">' +
+      '<div class="invoice-title">거 래 명 세 표</div>' +
+      '<table class="invoice-table">' +
+      '<colgroup><col style="width:6%"><col style="width:14%"><col style="width:30%"><col style="width:6%"><col style="width:14%"><col style="width:30%"></colgroup>' +
+      "<tr>" +
+      '<td class="vert" rowspan="4">공급받는자</td><td class="lbl">등록번호</td><td class="val-strong">' + esc(OUR_COMPANY.reg) + "</td>" +
+      '<td class="vert" rowspan="4">공급자</td><td class="lbl">등록번호</td><td class="val-strong" id="inv-reg">' + esc(def.reg || "") + "</td>" +
+      "</tr>" +
+      '<tr><td class="lbl">상호(법인명)</td><td class="val">' + esc(OUR_COMPANY.name) + "</td>" +
+      '<td class="lbl">상호(법인명)</td><td class="val" id="inv-name">' + esc(def.name || "") + "</td></tr>" +
+      '<tr><td class="lbl">대표자명</td><td class="val">' + esc(OUR_COMPANY.ceo) + "</td>" +
+      '<td class="lbl">대표자명</td><td class="val" id="inv-ceo">' + esc(def.ceo || "") + "</td></tr>" +
+      '<tr><td class="lbl">계좌번호</td><td class="val">' + esc(OUR_COMPANY.account) + "</td>" +
+      '<td class="lbl">이메일 주소</td><td class="val" id="inv-email">' + esc(def.email || "") + "</td></tr>" +
+      "</table>" +
+      '<table class="invoice-table">' +
+      '<colgroup><col style="width:5%"><col style="width:5%"><col style="width:5%"><col style="width:29%"><col style="width:8%"><col style="width:7%"><col style="width:12%"><col style="width:10%"><col style="width:12%"><col style="width:7%"></colgroup>' +
+      '<tr class="hd"><td>년</td><td>월</td><td>일</td><td>품 목</td><td>수량</td><td>단위</td><td>공급가액</td><td>세액</td><td>합계</td><td>비고</td></tr>' +
+      lineRows +
+      "</table>" +
+      '<table class="invoice-table">' +
+      '<colgroup><col style="width:10%"><col style="width:20%"><col style="width:4%"><col style="width:10%"><col style="width:20%"><col style="width:4%"><col style="width:14%"><col style="width:18%"></colgroup>' +
+      "<tr>" +
+      '<td class="lbl">인수자</td><td></td><td>인</td>' +
+      '<td class="lbl">납품자</td><td></td><td>인</td>' +
+      '<td class="lbl">합계 금액</td><td class="val-strong">' + grandTotal.toLocaleString("ko-KR") + "원</td>" +
+      "</tr></table>" +
+      "</div></div></div>" +
+      '<div class="modal-actions" style="margin-top:16px;">' +
+      '<button type="button" class="btn" data-action="close-invoice">닫기</button>' +
+      '<button type="button" class="btn btn-primary" data-action="download-invoice">이미지로 다운로드</button>' +
+      "</div>" +
+      "</div></div>"
+    );
+  }
+
+  function renderManualAddBar(c) {
+    var open = UI.manualAddCampaignId === c.id;
+    if (!open) {
+      return '<div style="margin:12px 0;"><button class="btn btn-sm" data-action="open-manual-add" data-campaign="' + c.id + '">+ 신청자 직접 추가 (마감된 캠페인용)</button></div>';
+    }
+    return (
+      '<div class="card" style="padding:16px;margin:12px 0;">' +
+      '<h3 style="margin-bottom:10px;">신청자 직접 추가</h3>' +
+      '<p style="font-size:.8rem;color:var(--ink-faint);margin-bottom:12px;">마감돼서 신청 페이지로 접수를 못 받은 분을 관리자가 대신 등록할 때 써요. 주문번호를 이미 알고 있으면 같이 입력해주세요(없으면 배정확정 상태로 등록돼요).</p>' +
+      '<form data-action="manual-add-form" data-campaign="' + c.id + '">' +
+      '<div class="field"><label>이름</label><input name="name" required></div>' +
+      '<div class="field"><label>연락처</label><input name="phone" type="tel" inputmode="numeric" placeholder="010-0000-0000" required></div>' +
+      '<div class="field"><label>배송지 주소</label><input name="address" required></div>' +
+      '<div class="field"><label>은행</label><input name="bank" required></div>' +
+      '<div class="field"><label>계좌번호 (-없이)</label><input name="account" type="tel" inputmode="numeric" placeholder="숫자만 입력" required></div>' +
+      '<div class="field"><label>신청 수량</label><input name="quantity" type="number" min="1" value="1" required></div>' +
+      (isMixedDelivery(c)
+        ? '<div class="field"><label>배송 방식</label><select name="deliveryType" required><option value="real">실배송</option><option value="empty">빈박스</option></select></div>'
+        : "") +
+      '<div class="field"><label>주문번호 <span style="font-weight:400;color:var(--ink-faint);">(선택 · 이미 구매했으면 입력)</span></label><input name="orderNumber" inputmode="numeric" placeholder="아직 없으면 비워두세요"></div>' +
+      '<div class="modal-actions"><button type="button" class="btn" data-action="close-manual-add">취소</button><button type="submit" class="btn btn-primary">추가</button></div>' +
+      "</form></div>"
+    );
+  }
+
+  function sortArrow(field) {
+    if (UI.campSortField !== field) return '<span style="opacity:.35;font-size:.75em;">↕</span>';
+    return '<span style="font-size:.75em;">' + (UI.campSortDir === "asc" ? "▲" : "▼") + "</span>";
+  }
+
+  function sortedApplicants(list) {
+    if (!UI.campSortField) return list;
+    var field = UI.campSortField;
+    var dir = UI.campSortDir === "desc" ? -1 : 1;
+    return list.slice().sort(function (a, b) {
+      var av = field === "name" ? (a.name || "") : (a.applied_at || "");
+      var bv = field === "name" ? (b.name || "") : (b.applied_at || "");
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }
+
+  function renderCampDetail(c) {
+    var list = c.applicants || [];
+    if (!list.length) return '<div class="camp-detail">' + renderManualAddBar(c) + '<div class="empty">아직 신청자가 없어요.</div></div>';
+    var closed = !campaignIsOpen(c);
+    var pending = list.filter(isSettleEligible);
+    var rows = sortedApplicants(list).map(function (a, idx) {
+      var stuck = closed && a.status === "assigned";
+      var eligible = isSettleEligible(a);
+      var checked = eligible ? (UI.settleChecked[a.id] !== false) : (UI.settleChecked[a.id] === true);
+      return (
+        "<tr><td><input type=\"checkbox\" data-action=\"settle-check\" data-applicant=\"" + a.id + "\" " + (checked ? "checked" : "") + "></td>" +
+        '<td class="num" style="color:var(--ink-faint);">' + (idx + 1) + "</td>" +
+        "<td>" + esc(a.name) + ((a.quantity || 1) > 1 ? ' <span style="color:var(--accent);font-weight:600;">· ' + a.quantity + "개</span>" : "") + (a.delivery_type ? ' <span class="pill pill-closed" style="font-size:.68rem;">' + deliveryTypeLabel(a.delivery_type) + "</span>" : "") + (stuck ? ' <span class="warn-tag">· 미구매</span>' : "") + "</td>" +
+        '<td style="max-width:220px;white-space:normal;font-size:.85rem;">' + esc(a.address) + "</td>" +
+        '<td class="num">' + esc(a.phone) + "</td>" +
+        '<td class="num">' + esc(a.order_number || "—") + "</td>" +
+        "<td>" + esc(a.bank) + " " + esc(a.account) + "</td>" +
+        '<td class="num" style="white-space:nowrap;font-size:.8rem;color:var(--ink-soft);">' + esc(fmtAppliedAt(a.applied_at)) +
+        (a.purchased_at ? '<div style="color:var(--ink-faint);font-size:.74rem;margin-top:3px;">주문 ' + esc(fmtAppliedAt(a.purchased_at)) + "</div>" : "") +
+        "</td>" +
+        '<td><span class="pill pill-' + a.status + '">' + STATUS_LABEL[a.status] + "</span>" +
+        (a.exported ? ' <span class="pill pill-reviewed">파일 생성됨</span>' : "") +
+        (a.status === "paid" && a.paid_at ? '<div style="font-size:.74rem;color:var(--ink-faint);margin-top:3px;">' + esc(fmtDateTime(a.paid_at)) + "</div>" : "") +
+        "</td>" +
+        '<td>' + (eligible || a.status === "paid" ? renderProofControl(a) : "") + "</td>" +
+        '<td><button type="button" class="btn btn-sm" data-action="delete-applicant" data-campaign="' + c.id + '" data-applicant="' + a.id + '" style="color:var(--critical);">삭제</button></td>' +
+        "</tr>"
+      );
+    }).join("");
+    var allChecked = pending.length > 0 && pending.every(function (a) { return UI.settleChecked[a.id] !== false; });
+    var selectAllBar = !pending.length ? "" : (
+      '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--ink-soft);margin-bottom:6px;">' +
+      '<input type="checkbox" data-action="settle-check-all" data-campaign="' + c.id + '" ' + (allChecked ? "checked" : "") + '> 전체선택' +
+      "</label>"
+    );
+    var settlementBar = !pending.length ? "" : (
+      '<div style="display:flex;gap:12px;flex-wrap:wrap;margin:16px 0;">' +
+      '<div class="settle-total" style="flex:1;min-width:180px;"><span>총 ' + list.length + '건 정산 예정금액</span><span class="amt">' + fmtWon(list.reduce(function (s, a) { return s + payout(c, a.quantity, a.delivery_type); }, 0)) + "</span></div>" +
+      '<div class="settle-total" style="flex:1;min-width:180px;"><span>' + selectedCampaignCount(pending) + '건 선택 항목 정산액</span><span class="amt">' + fmtWon(selectedCampaignTotal(pending, c)) + "</span></div>" +
+      "</div>" +
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">' +
+      '<button class="btn" data-action="copy-settlement" data-campaign="' + c.id + '">정산 내역 복사</button>' +
+      '<button class="btn" data-action="download-transfer-file" data-campaign="' + c.id + '">정산 파일 다운로드</button>' +
+      '<label class="btn" style="cursor:pointer;margin:0;">이체 증빙 첨부(선택 항목)<input type="file" accept="image/*,application/pdf" style="display:none;" data-action="attach-transfer-proof-file" data-campaign="' + c.id + '"></label>' +
+      '<button class="btn btn-primary" data-action="mark-paid" data-campaign="' + c.id + '">선택 항목 입금 완료 처리</button>' +
+      "</div>" +
+      '<p style="font-size:.78rem;color:var(--ink-faint);margin-top:6px;">다계좌 이체 캡처 한 장을 지금 체크된 항목 전체에 같이 첨부해요.</p>' +
+      '<p style="font-size:.78rem;color:var(--ink-faint);margin-top:8px;">정산은 주문번호가 등록되는 대로 진행돼요(리뷰 완료를 기다리지 않아요). 15건이 넘으면 파일이 자동으로 나눠서 다운로드돼요.</p>'
+    );
+    var shippingBar = '<div style="margin:12px 0;"><button class="btn" data-action="copy-shipping-info" data-campaign="' + c.id + '">이름·주소·연락처·주문번호 복사</button></div>';
+    var paidList = list.filter(function (a) { return a.status === "paid"; });
+    var paidTotal = paidList.reduce(function (s, a) { return s + payout(c, a.quantity, a.delivery_type); }, 0);
+    var paidSummaryBar = !paidList.length ? "" : (
+      '<div class="settle-total" style="max-width:320px;background:var(--success-soft);color:var(--success);">' +
+      '<span>정산완료 ' + paidList.length + '건 총 금액</span><span class="amt">' + fmtWon(paidTotal) + "</span></div>"
+    );
+    return (
+      '<div class="camp-detail">' + selectAllBar + '<div class="table-wrap"><table><thead><tr><th></th><th class="num">#</th>' +
+      '<th data-action="sort-applicants" data-field="name" style="cursor:pointer;user-select:none;white-space:nowrap;">이름 ' + sortArrow("name") + "</th>" +
+      "<th>주소</th><th class=\"num\">연락처</th><th class=\"num\">주문번호</th><th>계좌</th>" +
+      '<th class="num" data-action="sort-applicants" data-field="appliedAt" style="cursor:pointer;user-select:none;white-space:nowrap;">신청일시 ' + sortArrow("appliedAt") + "</th>" +
+      "<th>상태</th><th>증빙</th><th></th></tr></thead><tbody>" +
+      rows + "</tbody></table></div>" + shippingBar + renderManualAddBar(c) + settlementBar + paidSummaryBar + "</div>"
+    );
+  }
+
+  function renderProofControl(a) {
+    if (a.transfer_proof_path) {
+      return '<button type="button" class="btn btn-sm" data-action="view-transfer-proof" data-path="' + esc(a.transfer_proof_path) + '">증빙 보기</button>';
+    }
+    return '<span style="color:var(--ink-faint);font-size:.8rem;">—</span>';
+  }
+
+  function attachTransferProofBatch(campaignId, file) {
+    if (!file || !file.size) return;
+    var camp = findCampaign(campaignId);
+    if (!camp) return;
+    var pending = (camp.applicants || []).filter(isSettleEligible);
+    var selected = pending.filter(function (a) { return UI.settleChecked[a.id] !== false; });
+    if (!selected.length) { toast("선택된 항목이 없어요. 체크박스로 먼저 선택해주세요.", "warn"); return; }
+    var ext = ((file.name || "").split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    var path = campaignId + "/" + Date.now() + "_" + Math.random().toString(36).slice(2, 8) + "." + ext;
+    setBusy(true);
+    sb.storage.from("transfer-proofs").upload(path, file).then(function (res) {
+      if (res.error) { setBusy(false); toast(res.error.message || "증빙 업로드에 실패했어요.", "err"); return null; }
+      var ids = selected.map(function (a) { return a.id; });
+      return sb.from("applicants").update({ transfer_proof_path: path }).in("id", ids);
+    }).then(function (res2) {
+      setBusy(false);
+      if (!res2) return;
+      if (res2.error) { toast(res2.error.message || "증빙 저장에 실패했어요.", "err"); return; }
+      toast(selected.length + "건에 이체 증빙을 첨부했어요.");
+      loadAdminData();
+    }).catch(function (err) {
+      setBusy(false);
+      toast((err && err.message) || "증빙 업로드에 실패했어요.", "err");
+    });
+  }
+
+  function viewTransferProof(path) {
+    if (!path) return;
+    sb.storage.from("transfer-proofs").createSignedUrl(path, 60).then(function (res) {
+      if (res.error || !res.data) { toast("증빙 파일을 불러오지 못했어요.", "err"); return; }
+      window.open(res.data.signedUrl, "_blank", "noopener");
+    });
+  }
+
+  function selectedCampaignTotal(pending, c) {
+    return pending.filter(function (a) { return UI.settleChecked[a.id] !== false; })
+      .reduce(function (s, a) { return s + payout(c, a.quantity, a.delivery_type); }, 0);
+  }
+  function selectedCampaignCount(pending) {
+    return pending.filter(function (a) { return UI.settleChecked[a.id] !== false; }).length;
+  }
+
+  /* ================= DATA LOADING ================= */
+  function loadParticipantData() {
+    DATA.loadingCampaigns = true;
+    render();
+    sb.rpc("list_open_campaigns").then(function (res) {
+      DATA.loadingCampaigns = false;
+      if (res.error) { toast("캠페인을 불러오지 못했어요.", "err"); DATA.campaigns = []; render(); return; }
+      DATA.campaigns = res.data || [];
+      if (pendingDeepLinkId) {
+        var linked = DATA.campaigns.filter(function (c) { return String(c.id) === String(pendingDeepLinkId); })[0];
+        if (linked) {
+          UI.applyCampaignId = linked.id;
+        } else {
+          UI.closedCampaignNotice = true;
+        }
+        pendingDeepLinkId = null;
+      }
+      render();
+    });
+  }
+
+  function loadClosedCampaigns() {
+    if (DATA.loadingClosedCampaigns || DATA.closedCampaignsLoaded) return;
+    DATA.loadingClosedCampaigns = true;
+    render();
+    sb.rpc("list_closed_campaigns").then(function (res) {
+      DATA.loadingClosedCampaigns = false;
+      DATA.closedCampaignsLoaded = true;
+      if (res.error) { toast("마감된 캠페인을 불러오지 못했어요.", "err"); DATA.closedCampaigns = []; render(); return; }
+      DATA.closedCampaigns = res.data || [];
+      render();
+    });
+  }
+
+  function bounceNonAdmin() {
+    // 로그인은 됐지만 admins 테이블에 없는 계정 — 관리자 화면을 보여줄 필요 없이
+    // 조용히 로그아웃시키고 참여자 화면으로 돌려보낸다.
+    DATA.loadingAdmin = false;
+    DATA.isAdmin = false;
+    DATA.adminCampaigns = [];
+    sb.auth.signOut().then(function () {
+      UI.adminSession = null;
+      UI.role = "participant"; saveRole();
+      UI.accessDeniedNotice = true;
+      render();
+    });
+  }
+  function loadAdminData() {
+    DATA.loadingAdmin = true;
+    render();
+    var uid = UI.adminSession && UI.adminSession.user && UI.adminSession.user.id;
+    if (!uid) { bounceNonAdmin(); return; }
+    // RLS는 권한이 없어도 에러 대신 "0건"을 정상 응답으로 돌려주므로,
+    // 캠페인 데이터를 바로 불러오기 전에 admins 테이블에 실제로 등록돼 있는지부터 확인한다.
+    sb.from("admins").select("user_id").eq("user_id", uid).maybeSingle().then(function (adminRes) {
+      if (adminRes.error || !adminRes.data) { bounceNonAdmin(); return; }
+      sb.from("campaigns").select("*, applicants(*)").order("created_at", { ascending: false }).then(function (res) {
+        DATA.loadingAdmin = false;
+        if (res.error) { bounceNonAdmin(); return; }
+        DATA.isAdmin = true;
+        DATA.adminCampaigns = res.data || [];
+        render();
+        loadClients();
+      });
+    });
+  }
+
+  // 업체(거래처) 목록을 불러온다. 거래명세서 "공급자" 자동완성(datalist)과
+  // "업체 관리" 탭에서 함께 쓴다.
+  function loadClients() {
+    sb.from("clients").select("*").order("name").then(function (res) {
+      if (res.error) return;
+      DATA.clients = res.data || [];
+      DATA.clientNames = DATA.clients.map(function (r) { return r.name; });
+      render();
+    });
+  }
+
+  /* ================= MUTATIONS ================= */
+  function applyToCampaign(campaignId, data) {
+    setBusy(true);
+    sb.rpc("apply_to_campaign", {
+      p_campaign_id: campaignId, p_name: data.name, p_phone: data.phone,
+      p_address: data.address, p_bank: data.bank, p_account: data.account,
+      p_quantity: Math.max(1, Number(data.quantity) || 1)
+    }).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "신청에 실패했어요.", "err"); return; }
+      UI.applyCampaignId = null;
+      toast("신청이 완료됐어요. 접수와 동시에 배정이 확정됐습니다.");
+      loadParticipantData();
+    });
+  }
+
+  function addApplicantManually(campaignId, data) {
+    var orderNumber = (data.orderNumber || "").trim();
+    setBusy(true);
+    sb.from("applicants").insert({
+      campaign_id: campaignId,
+      name: data.name, phone: data.phone, address: data.address,
+      bank: data.bank, account: data.account,
+      quantity: Math.max(1, Number(data.quantity) || 1),
+      order_number: orderNumber,
+      status: orderNumber ? "purchased" : "assigned",
+      purchased_at: orderNumber ? new Date().toISOString() : null,
+      delivery_type: data.deliveryType || null
+    }).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "신청자 추가에 실패했어요.", "err"); return; }
+      UI.manualAddCampaignId = null;
+      toast("신청자를 직접 추가했어요.");
+      loadAdminData();
+    });
+  }
+
+  function deleteApplicant(id) {
+    setBusy(true);
+    sb.from("applicants").delete().eq("id", id).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "삭제에 실패했어요.", "err"); return; }
+      toast("신청 건을 삭제했어요.");
+      loadAdminData();
+    });
+  }
+
+  function doLookup(phone) {
+    sb.rpc("my_applications", { p_phone: phone }).then(function (res) {
+      if (res.error) { toast("조회에 실패했어요.", "err"); return; }
+      UI.editingApplicantId = null;
+      DATA.lookupPhone = phone;
+      DATA.lookupItems = res.data || [];
+      renderLookupResults(DATA.lookupItems);
+    });
+  }
+
+  function submitOrderNumber(applicantId, phone, orderNumber) {
+    setBusy(true);
+    sb.rpc("submit_order_number", { p_applicant_id: applicantId, p_phone: phone, p_order_number: orderNumber }).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "등록에 실패했어요.", "err"); return; }
+      toast("주문번호가 등록됐어요.");
+      doLookup(phone);
+    });
+  }
+
+  function updateApplicantInfo(applicantId, phone, newPhone, data) {
+    setBusy(true);
+    sb.rpc("update_applicant_info", {
+      p_applicant_id: applicantId, p_phone: phone, p_new_phone: newPhone,
+      p_name: data.name, p_address: data.address, p_bank: data.bank, p_account: data.account,
+      p_quantity: data.quantity ? Math.max(1, Number(data.quantity) || 1) : null
+    }).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "수정에 실패했어요.", "err"); return; }
+      toast("신청 정보를 수정했어요.");
+      var phoneEl5 = document.getElementById("lookup-phone");
+      if (phoneEl5) phoneEl5.value = newPhone;
+      doLookup(newPhone);
+    });
+  }
+
+  function deleteApplicantSelf(applicantId, phone) {
+    setBusy(true);
+    sb.rpc("delete_applicant_self", { p_applicant_id: applicantId, p_phone: phone }).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "취소에 실패했어요.", "err"); return; }
+      toast("신청을 취소했어요.");
+      doLookup(phone);
+    });
+  }
+
+  function uploadCampaignImage(file) {
+    if (!file || !file.size) return Promise.resolve(null);
+    var extMatch = /\.([a-zA-Z0-9]+)$/.exec(file.name || "");
+    var ext = (extMatch ? extMatch[1] : "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    var path = Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+    return sb.storage.from("campaign-images").upload(path, file, { cacheControl: "3600", upsert: false }).then(function (res) {
+      if (res.error) throw new Error(res.error.message || "이미지 업로드에 실패했어요.");
+      var pub = sb.storage.from("campaign-images").getPublicUrl(path);
+      return (pub.data && pub.data.publicUrl) || null;
+    });
+  }
+
+  // 빈박스/실배송을 함께 운영하는 캠페인이면 두 목표 인원의 합으로 모집 인원을 정하고,
+  // 아니면 기존처럼 관리자가 입력한 모집 인원을 그대로 쓴다.
+  function deliveryFieldsFrom(data) {
+    if (data.mixed) {
+      var real = Math.max(0, Number(data.realTarget) || 0);
+      var empty = Math.max(0, Number(data.emptyTarget) || 0);
+      return { real_delivery_target: real, empty_box_target: empty, recruit_count: Math.max(1, real + empty) };
+    }
+    return { real_delivery_target: 0, empty_box_target: 0, recruit_count: Math.max(1, Number(data.recruitCount) || 1) };
+  }
+
+  function createCampaign(data) {
+    setBusy(true);
+    var qtyPrices = data.qtyPrices || [];
+    var dlv = deliveryFieldsFrom(data);
+    uploadCampaignImage(data.imageFile).then(function (imageUrl) {
+      return sb.from("campaigns").insert({
+        seller: data.seller, product: data.product, option_name: (data.optionName || "").trim() || null,
+        keyword: (data.keyword || "").trim() || null,
+        unit_price: qtyPrices[0] || 0, fee: unformatMoney(data.fee),
+        quantity_prices: qtyPrices,
+        note: (data.note || "").trim() || null,
+        max_quantity: Math.max(1, qtyPrices.length || 1),
+        recruit_count: dlv.recruit_count, deadline: data.deadline || defaultFarDeadline(),
+        real_delivery_target: dlv.real_delivery_target, empty_box_target: dlv.empty_box_target,
+        image_url: imageUrl
+      }).select().single();
+    }).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "등록 실패", "err"); return; }
+      UI.showNewCampaign = false;
+      toast("캠페인이 등록됐어요.");
+      if (res.data) notifyNewCampaign(res.data);
+      loadAdminData();
+    }).catch(function (err) {
+      setBusy(false);
+      toast((err && err.message) || "이미지 업로드에 실패했어요.", "err");
+    });
+  }
+
+  // 새 캠페인이 등록되면 구독해둔 참여자들에게 푸시 알림을 보낸다. (실패해도 캠페인 등록 자체는 이미 끝난 뒤라 조용히 무시)
+  function notifyNewCampaign(c) {
+    try {
+      var title = c.product + (c.option_name ? " (" + c.option_name + ")" : "");
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "새 체험단이 올라왔어요!",
+          message: title + " · 지급액 " + fmtWon((c.unit_price || 0) + (c.fee || 0)),
+          url: buildShareUrl(c)
+        })
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  function updateCampaign(id, data) {
+    setBusy(true);
+    var qtyPrices = data.qtyPrices || [];
+    var dlv = deliveryFieldsFrom(data);
+    uploadCampaignImage(data.imageFile).then(function (imageUrl) {
+      var patch = {
+        seller: data.seller, product: data.product, option_name: (data.optionName || "").trim() || null,
+        keyword: (data.keyword || "").trim() || null,
+        unit_price: qtyPrices[0] || 0, fee: unformatMoney(data.fee),
+        quantity_prices: qtyPrices,
+        note: (data.note || "").trim() || null,
+        max_quantity: Math.max(1, qtyPrices.length || 1),
+        recruit_count: dlv.recruit_count,
+        real_delivery_target: dlv.real_delivery_target, empty_box_target: dlv.empty_box_target
+      };
+      if (imageUrl) patch.image_url = imageUrl;
+      return sb.from("campaigns").update(patch).eq("id", id);
+    }).then(function (res) {
+      setBusy(false);
+      if (res.error) { toast(res.error.message || "수정 실패", "err"); return; }
+      UI.editingCampaignId = null;
+      toast("캠페인이 수정됐어요.");
+      loadAdminData();
+    }).catch(function (err) {
+      setBusy(false);
+      toast((err && err.message) || "이미지 업로드에 실패했어요.", "err");
+    });
+  }
+
+  function deleteCampaign(id) {
+    setBusy(true);
+    // 참여자 기록을 먼저 명시적으로 지운 뒤 캠페인을 지운다 (DB의 on delete cascade 설정 여부와
+    // 무관하게 항상 확실히 정리되도록 하기 위함 — 참여자가 삭제된 캠페인을 조회 화면에서 계속
+    // 보는 문제를 막는다).
+    sb.from("applicants").delete().eq("campaign_id", id).then(function (res1) {
+      if (res1.error) throw new Error(res1.error.message || "참여자 기록 삭제에 실패했어요.");
+      return sb.from("campaigns").delete().eq("id", id);
+    }).then(function (res2) {
+      setBusy(false);
+      if (res2.error) { toast(res2.error.message || "삭제 실패", "err"); return; }
+      toast("캠페인을 삭제했어요.");
+      loadAdminData();
+    }).catch(function (err) {
+      setBusy(false);
+      toast((err && err.message) || "삭제 실패", "err");
+    });
+  }
+
+  function forceCloseCampaign(id) {
+    sb.from("campaigns").update({ manually_closed: true }).eq("id", id).then(function (res) {
+      if (res.error) { toast("처리 실패", "err"); return; }
+      toast("모집을 마감했어요.");
+      loadAdminData();
+    });
+  }
+
+  function markPaid(ids) {
+    var now = new Date().toISOString();
+    sb.from("applicants").update({ status: "paid", paid_at: now }).in("id", ids).then(function (res) {
+      if (res.error) { toast("처리 실패", "err"); return; }
+      UI.settleChecked = {};
+      toast(ids.length + "건 입금 완료 처리했어요.");
+      loadAdminData();
+    });
+  }
+
+  function markExported(ids) {
+    return sb.from("applicants").update({ exported: true }).in("id", ids);
+  }
+
+  function safeFileName(s) {
+    return String(s || "").replace(/[\\/:*?"<>|]/g, " ").replace(/\s+/g, " ").trim();
+  }
+
+  function downloadTransferFile(pending) {
+    var selected = pending.filter(function (a) { return UI.settleChecked[a.id] !== false; });
+    if (!selected.length) { toast("선택된 항목이 없어요.", "warn"); return; }
+    var batches = [];
+    for (var i = 0; i < selected.length; i += 15) batches.push(selected.slice(i, i + 15));
+    var productName = safeFileName((selected[0].campaign && selected[0].campaign.product) || "정산") || "정산";
+    batches.forEach(function (batch, idx) {
+      var rows = batch.map(function (a) {
+        return [a.bank, a.account, payout(a.campaign, a.quantity, a.delivery_type), "제품 구입비", "제품 구입비", ""];
+      });
+      var ws = XLSX.utils.aoa_to_sheet(rows);
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+      var filename = todayISO().replace(/-/g, "") + "_" + productName + "_정산파일" + (batches.length > 1 ? "_" + (idx + 1) + "차" : "") + ".xls";
+      // 은행 다계좌이체 업로드 화면이 구형 .xls(97-2003, BIFF8) 양식을 요구하므로 그 포맷으로 저장한다.
+      XLSX.writeFile(wb, filename, { bookType: "biff8" });
+    });
+    var ids = selected.map(function (a) { return a.id; });
+    markExported(ids).then(function () { loadAdminData(); });
+    toast(batches.length + "개 파일을 다운로드했어요.");
+  }
+
+  function downloadLedgerExcel() {
+    var ledger = computeLedgerRows();
+    if (!ledger.rows.length) { toast("이 기간에 해당하는 기록이 없어요.", "warn"); return; }
+    var header = ["번호", ledger.status === "paid" ? "지급일" : "신청일시", "이름", "연락처", "주소", "상품명", "수량", "주문번호", "지급액", "은행", "계좌번호", "상태"];
+    var body = ledger.rows.map(function (a, idx) {
+      return [
+        idx + 1,
+        ledger.status === "paid" ? fmtLedgerDate(a.paid_at) : fmtAppliedAt(a.applied_at),
+        a.name, a.phone, a.address,
+        ((a.campaign && a.campaign.product) || "") + (a.campaign && a.campaign.option_name ? " · " + a.campaign.option_name : ""),
+        a.quantity || 1,
+        a.order_number || "", payout(a.campaign, a.quantity, a.delivery_type), a.bank, a.account, STATUS_LABEL[a.status] || a.status
+      ];
+    });
+    var ws = XLSX.utils.aoa_to_sheet([header].concat(body));
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "지급대장");
+    var filename = "구멍이체험단_지급대장_" + ledger.month.replace("-", "") + ".xlsx";
+    XLSX.writeFile(wb, filename);
+    toast("지급대장 엑셀을 다운로드했어요.");
+  }
+
+  function setBusy(v) { UI.busy = v; }
+
+  /* ================= AUTH ================= */
+  function doLogin(email, password) {
+    UI.loginError = null;
+    sb.auth.signInWithPassword({ email: email, password: password }).then(function (res) {
+      if (res.error) { UI.loginError = "이메일 또는 비밀번호가 올바르지 않아요."; render(); return; }
+      UI.adminSession = res.data.session;
+      loadAdminData();
+    });
+  }
+  function doGoogleLogin() {
+    // 구글 로그인은 페이지를 벗어났다가 돌아오는 방식이라, role을 미리 admin으로 저장해둬야
+    // 돌아왔을 때 다시 담당자 화면으로 이어진다.
+    // redirectTo는 Supabase의 Redirect URLs 허용 목록과 문자 그대로 일치해야 한다.
+    // window.location.origin은 한글 도메인에서 브라우저가 유니코드 형태로 돌려주는데,
+    // Supabase에는 퓨니코드 형태로 등록돼 있어 서로 달라 인증이 조용히 실패하므로 고정값을 사용한다.
+    UI.role = "admin"; saveRole();
+    sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: "https://xn--2e0b17hi4g2uo9fgfxo.com" } });
+  }
+  function doLogout() {
+    sb.auth.signOut().then(function () {
+      UI.adminSession = null; DATA.isAdmin = false; DATA.adminCampaigns = [];
+      render();
+    });
+  }
+
+  /* ================= EVENTS ================= */
+  document.addEventListener("keydown", function (e) {
+    if ((e.key === "Enter" || e.key === " ") && e.target && e.target.getAttribute && e.target.getAttribute("role") === "button") {
+      e.preventDefault();
+      e.target.click();
+    } else if (e.key === "Escape") {
+      closeTopmostModal();
+    }
   });
 
-  async function loadPosts() {
-    const { data, error } = await sb
-      .from("posts")
-      .select("*")
-      .eq("status", "approved")
-      .order("posted_at", { ascending: false });
-    if (error) { console.error(error); return; }
-    POSTS = data;
-    render(POSTS);
+  // Esc를 누르면 지금 열려 있는 모달 중 가장 위(가장 최근에 연) 것부터 하나만 닫는다.
+  // 여러 개가 겹쳐 열려 있을 수 있어서(예: 신청 모달 위에 이미지 확대), 한 번에 다 닫지 않고
+  // render() 안에서 나중에 그려지는(=화면에서 위에 보이는) 순서를 그대로 따라간다.
+  function closeTopmostModal() {
+    if (UI.viewingImageUrl) { UI.viewingImageUrl = null; render(); return; }
+    if (UI.viewingClientCampaignsId) { UI.viewingClientCampaignsId = null; render(); return; }
+    if (UI.viewingApplicantsCampaignId) { UI.viewingApplicantsCampaignId = null; render(); return; }
+    if (UI.invoiceCampaignIds && UI.invoiceCampaignIds.length) { UI.invoiceCampaignIds = []; UI.invoiceDefaults = null; render(); return; }
+    if (UI.accessDeniedNotice) { UI.accessDeniedNotice = false; render(); return; }
+    if (UI.closedCampaignNotice) { UI.closedCampaignNotice = false; render(); return; }
+    if (UI.applyCampaignId) { UI.applyCampaignId = null; render(); return; }
   }
 
-  function subscribeRealtime() {
-    sb.channel("posts-public")
-      .on("postgres_changes", { event: "*", schema: "public", table: "posts", filter: "status=eq.approved" }, () => {
-        loadPosts();
-      })
-      .subscribe();
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-action]");
+    if (!t) return;
+    var action = t.getAttribute("data-action");
+    if (action === "switch-role") {
+      UI.role = t.getAttribute("data-role"); saveRole();
+      if (UI.role === "admin" && UI.adminSession) loadAdminData(); else render();
+      if (UI.role === "participant") loadParticipantData();
+    } else if (action === "go-home") {
+      UI.role = "participant"; saveRole();
+      UI.applyCampaignId = null; UI.viewingImageUrl = null; UI.editingCampaignId = null; UI.profileLookupPhone = null;
+      loadParticipantData();
+    } else if (action === "enable-push") {
+      enablePush();
+    } else if (action === "participant-tab") {
+      UI.pTab = t.getAttribute("data-tab");
+      render();
+      if (UI.pTab === "closed") loadClosedCampaigns();
+    } else if (action === "sort-applicants") {
+      var field = t.getAttribute("data-field");
+      if (UI.campSortField === field) {
+        UI.campSortDir = UI.campSortDir === "asc" ? "desc" : "asc";
+      } else {
+        UI.campSortField = field;
+        UI.campSortDir = "asc";
+      }
+      render();
+    } else if (action === "admin-view") {
+      UI.adminView = t.getAttribute("data-view"); render();
+    } else if (action === "open-new-client") {
+      UI.showNewClient = true; UI.editingClientId = null; render();
+    } else if (action === "cancel-client-form") {
+      UI.showNewClient = false; UI.editingClientId = null; render();
+    } else if (action === "edit-client") {
+      UI.showNewClient = true; UI.editingClientId = t.getAttribute("data-client"); render();
+    } else if (action === "delete-client") {
+      var delClientId = t.getAttribute("data-client");
+      var delClient = (DATA.clients || []).filter(function (c) { return String(c.id) === String(delClientId); })[0];
+      if (window.confirm("이 업체 정보를 삭제할까요?" + (delClient ? "\n" + delClient.name : ""))) deleteClient(delClientId);
+    } else if (action === "download-ledger-excel") {
+      downloadLedgerExcel();
+    } else if (action === "download-transfer-batch") {
+      downloadTransferBatch(Number(t.getAttribute("data-batch")));
+    } else if (action === "view-transfer-proof") {
+      viewTransferProof(t.getAttribute("data-path"));
+    } else if (action === "open-apply") {
+      UI.applyCampaignId = t.getAttribute("data-campaign"); UI.profileLookupPhone = null; render();
+    } else if (action === "close-modal") {
+      UI.applyCampaignId = null; UI.profileLookupPhone = null; render();
+    } else if (action === "close-closed-notice") {
+      UI.closedCampaignNotice = false; render();
+    } else if (action === "close-access-denied") {
+      UI.accessDeniedNotice = false; render();
+    } else if (action === "view-applicants") {
+      var vaId = t.getAttribute("data-campaign");
+      UI.viewingApplicantsCampaignId = vaId;
+      DATA.applicantNames = null;
+      DATA.loadingApplicantNames = true;
+      render();
+      sb.rpc("list_campaign_applicant_names", { p_campaign_id: vaId }).then(function (res) {
+        DATA.loadingApplicantNames = false;
+        DATA.applicantNames = res.error ? [] : (res.data || []).map(function (r) { return { name: r.name, phone4: r.phone_last4, deliveryType: r.delivery_type }; });
+        render();
+      });
+    } else if (action === "close-applicants") {
+      UI.viewingApplicantsCampaignId = null; render();
+    } else if (action === "view-client-campaigns") {
+      UI.viewingClientCampaignsId = t.getAttribute("data-client");
+      UI.selectedClientCampaignIds = {};
+      render();
+    } else if (action === "close-client-campaigns") {
+      UI.viewingClientCampaignsId = null; render();
+    } else if (action === "toggle-client-campaign") {
+      var toggleCampId = t.getAttribute("data-campaign");
+      UI.selectedClientCampaignIds[toggleCampId] = t.checked;
+      render();
+    } else if (action === "toggle-select-all-client-campaigns") {
+      var allClientCamps = (DATA.adminCampaigns || []).filter(function (x) {
+        var client = (DATA.clients || []).filter(function (cl) { return String(cl.id) === String(UI.viewingClientCampaignsId); })[0];
+        return client && (x.seller || "") === client.name;
+      });
+      var allChecked = allClientCamps.length > 0 && allClientCamps.every(function (x) { return UI.selectedClientCampaignIds[x.id]; });
+      allClientCamps.forEach(function (x) { UI.selectedClientCampaignIds[x.id] = !allChecked; });
+      render();
+    } else if (action === "issue-combined-invoice") {
+      var invClient = (DATA.clients || []).filter(function (x) { return String(x.id) === String(UI.viewingClientCampaignsId); })[0];
+      if (!invClient) return;
+      var clientCamps = (DATA.adminCampaigns || []).filter(function (x) { return (x.seller || "") === invClient.name; });
+      var selectedCampIds = clientCamps.filter(function (x) { return UI.selectedClientCampaignIds[x.id]; }).map(function (x) { return x.id; });
+      if (!selectedCampIds.length) { toast("거래명세서로 합칠 캠페인을 하나 이상 선택해주세요.", "warn"); return; }
+      UI.invoiceCampaignIds = selectedCampIds;
+      // 업체 관리에 이미 저장돼 있는 정보를 바로 채워준다 (별도 조회 없이 즉시 반영).
+      UI.invoiceDefaults = {
+        name: invClient.name || "", reg: invClient.reg_number || "", ceo: invClient.ceo_name || "", email: invClient.email || "",
+        date: todayISO()
+      };
+      UI.viewingClientCampaignsId = null;
+      UI.selectedClientCampaignIds = {};
+      render();
+    } else if (action === "open-invoice") {
+      var invCamp = findCampaign(t.getAttribute("data-campaign"));
+      if (!invCamp) return;
+      UI.invoiceCampaignIds = [invCamp.id];
+      UI.invoiceDefaults = {
+        name: invCamp.seller || "", reg: "", ceo: "", email: "",
+        date: (invCamp.created_at || "").slice(0, 10) || todayISO()
+      };
+      render();
+      if (invCamp.seller) lookupClientAndFill(invCamp.seller);
+    } else if (action === "close-invoice") {
+      UI.invoiceCampaignIds = []; UI.invoiceDefaults = null; render();
+    } else if (action === "lookup-client-fill") {
+      var invNameEl = document.getElementById("inv-input-name");
+      if (invNameEl && invNameEl.value.trim()) lookupClientAndFill(invNameEl.value.trim());
+      else toast("상호를 먼저 입력해주세요.", "warn");
+    } else if (action === "download-invoice") {
+      downloadInvoiceImage();
+    } else if (action === "open-manual-add") {
+      UI.manualAddCampaignId = t.getAttribute("data-campaign"); render();
+    } else if (action === "close-manual-add") {
+      UI.manualAddCampaignId = null; render();
+    } else if (action === "view-image") {
+      UI.viewingImageUrl = t.getAttribute("data-url"); render();
+      // render()는 #app 전체를 다시 그리기 때문에, 별도로 그려서 채워둔 #lookup-results
+      // 안쪽 내용(연락처 조회 결과)이 있었다면 같이 지워진다. 있었다면 그대로 복원한다.
+      if (DATA.lookupItems && DATA.lookupItems.length) renderLookupResults(DATA.lookupItems);
+    } else if (action === "close-image-lightbox") {
+      UI.viewingImageUrl = null; render();
+      if (DATA.lookupItems && DATA.lookupItems.length) renderLookupResults(DATA.lookupItems);
+    } else if (action === "open-new-campaign") {
+      UI.showNewCampaign = true; render();
+    } else if (action === "close-new-campaign") {
+      UI.showNewCampaign = false; render();
+    } else if (action === "campaign-tab") {
+      UI.campaignTab = t.getAttribute("data-tab"); render();
+    } else if (action === "add-price-tier") {
+      var tierContainer = document.getElementById(t.getAttribute("data-target"));
+      if (!tierContainer) return;
+      var nextIndex = tierContainer.querySelectorAll(".qty-tier-row").length;
+      var wrapper = document.createElement("div");
+      wrapper.innerHTML = renderPriceTierRow(nextIndex, "");
+      tierContainer.appendChild(wrapper.firstChild);
+    } else if (action === "remove-price-tier") {
+      var tierRow = t.closest(".qty-tier-row");
+      var tierContainer2 = tierRow ? tierRow.parentElement : null;
+      if (!tierContainer2) return;
+      if (tierContainer2.querySelectorAll(".qty-tier-row").length <= 1) { toast("최소 1개 수량의 가격은 있어야 해요.", "warn"); return; }
+      tierRow.remove();
+      var remainingRows = tierContainer2.querySelectorAll(".qty-tier-row");
+      for (var ri = 0; ri < remainingRows.length; ri++) {
+        var label = remainingRows[ri].querySelector(".qty-tier-label");
+        if (label) label.textContent = (ri + 1) + "개";
+      }
+    } else if (action === "edit-my-applicant") {
+      UI.editingApplicantId = t.getAttribute("data-applicant");
+      renderLookupResults(DATA.lookupItems);
+    } else if (action === "cancel-edit-my-applicant") {
+      UI.editingApplicantId = null;
+      renderLookupResults(DATA.lookupItems);
+    } else if (action === "delete-my-applicant") {
+      var delApplicantId = t.getAttribute("data-applicant");
+      var delApplicant = (DATA.lookupItems || []).filter(function (x) { return String(x.id) === String(delApplicantId); })[0];
+      var delMsg = "이 신청을 취소할까요?" + (delApplicant ? "\n" + delApplicant.product : "") + "\n\n취소하면 되돌릴 수 없어요.";
+      if (window.confirm(delMsg)) {
+        var phoneElDel = document.getElementById("lookup-phone");
+        deleteApplicantSelf(delApplicantId, phoneElDel ? phoneElDel.value.trim() : "");
+      }
+    } else if (action === "toggle-expand") {
+      var id = t.getAttribute("data-campaign"); UI.expanded[id] = !UI.expanded[id]; render();
+    } else if (action === "force-close") {
+      forceCloseCampaign(t.getAttribute("data-campaign"));
+    } else if (action === "share-campaign") {
+      var shareId = t.getAttribute("data-campaign");
+      var campShare = findCampaign(shareId) ||
+        DATA.campaigns.filter(function (x) { return String(x.id) === String(shareId); })[0];
+      if (campShare) shareCampaign(campShare);
+    } else if (action === "copy-share-link") {
+      var copyId = t.getAttribute("data-campaign");
+      var campCopy = findCampaign(copyId) ||
+        DATA.campaigns.filter(function (x) { return String(x.id) === String(copyId); })[0];
+      if (campCopy) copyText(buildShareUrl(campCopy));
+    } else if (action === "edit-campaign") {
+      UI.editingCampaignId = t.getAttribute("data-campaign"); render();
+    } else if (action === "cancel-edit-campaign") {
+      UI.editingCampaignId = null; render();
+    } else if (action === "delete-campaign") {
+      var campDel = findCampaign(t.getAttribute("data-campaign"));
+      if (!campDel) return;
+      var count = (campDel.applicants || []).length;
+      var msg = "정말 이 캠페인을 삭제할까요?\n" + campDel.product + (campDel.option_name ? " (" + campDel.option_name + ")" : "") +
+        (count ? "\n\n이미 신청한 참여자 " + count + "명의 기록도 함께 삭제됩니다." : "");
+      if (window.confirm(msg)) deleteCampaign(campDel.id);
+    } else if (action === "delete-applicant") {
+      var campApp = findCampaign(t.getAttribute("data-campaign"));
+      var applicantId = t.getAttribute("data-applicant");
+      var applicant = campApp ? (campApp.applicants || []).filter(function (a) { return String(a.id) === String(applicantId); })[0] : null;
+      var appMsg = "이 신청 건을 삭제할까요?" + (applicant ? "\n" + applicant.name + " · " + applicant.phone : "") +
+        (applicant && applicant.status === "paid" ? "\n\n⚠️ 이미 입금 완료 처리된 건이에요. 실수로 지우지 않게 확인해주세요." : "");
+      if (window.confirm(appMsg)) deleteApplicant(applicantId);
+    } else if (action === "google-login") {
+      doGoogleLogin();
+    } else if (action === "logout") {
+      doLogout();
+    } else if (action === "mark-paid") {
+      var camp1 = findCampaign(t.getAttribute("data-campaign"));
+      if (!camp1) return;
+      var ids = (camp1.applicants || []).filter(isSettleEligible).filter(function (a) { return UI.settleChecked[a.id] !== false; }).map(function (a) { return a.id; });
+      if (!ids.length) { toast("선택된 항목이 없어요.", "warn"); return; }
+      markPaid(ids);
+    } else if (action === "download-transfer-file") {
+      var camp2 = findCampaign(t.getAttribute("data-campaign"));
+      if (!camp2) return;
+      var pending2 = (camp2.applicants || []).filter(isSettleEligible).map(function (a) { return Object.assign({}, a, { campaign: camp2 }); });
+      downloadTransferFile(pending2);
+    } else if (action === "copy-settlement") {
+      var camp3 = findCampaign(t.getAttribute("data-campaign"));
+      if (!camp3) return;
+      var pend = (camp3.applicants || []).filter(function (a) { return isSettleEligible(a) && UI.settleChecked[a.id] !== false; });
+      var text = pend.map(function (a) { return a.bank + " " + a.account + " " + a.name + " " + fmtWon(payout(camp3, a.quantity, a.delivery_type)); }).join("\n");
+      copyText(text);
+    } else if (action === "copy-keyword") {
+      copyText(t.getAttribute("data-value"));
+    } else if (action === "copy-shipping-info") {
+      var camp4 = findCampaign(t.getAttribute("data-campaign"));
+      if (!camp4) return;
+      var shipList = (camp4.applicants || []).filter(function (a) { return isSettleEligible(a) && UI.settleChecked[a.id] !== false; });
+      var shipText = shipList.map(function (a, i) {
+        return (i + 1) + ". " + a.name + " / " + a.address + " / " + a.phone + " / " + (a.order_number || "—") + ((a.quantity || 1) > 1 ? " / 수량 " + a.quantity + "개" : "");
+      }).join("\n");
+      copyText(shipText);
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    var action = e.target.getAttribute && e.target.getAttribute("data-action");
+    if (e.target.id === "ledger-month") {
+      UI.ledgerMonth = e.target.value; render();
+    } else if (e.target.id === "ledger-status") {
+      UI.ledgerStatus = e.target.value; render();
+    } else if (action === "attach-transfer-proof-file") {
+      var batchFile = e.target.files && e.target.files[0];
+      if (batchFile) attachTransferProofBatch(e.target.getAttribute("data-campaign"), batchFile);
+    } else if (action === "settle-check") {
+      UI.settleChecked[e.target.getAttribute("data-applicant")] = e.target.checked;
+      render();
+    } else if (action === "settle-check-all") {
+      var camp = findCampaign(e.target.getAttribute("data-campaign"));
+      if (!camp) return;
+      var checkedNow = e.target.checked;
+      (camp.applicants || []).filter(isSettleEligible).forEach(function (a) { UI.settleChecked[a.id] = checkedNow; });
+      render();
+    } else if (action === "toggle-mixed") {
+      var singleBlock = document.getElementById(e.target.getAttribute("data-single"));
+      var mixedBlock = document.getElementById(e.target.getAttribute("data-mixed"));
+      if (singleBlock) singleBlock.hidden = e.target.checked;
+      if (mixedBlock) mixedBlock.hidden = !e.target.checked;
+    }
+  });
+
+  function formatPhone(v) {
+    var digits = String(v || "").replace(/\D/g, "").slice(0, 11);
+    var p1 = digits.slice(0, 3), p2 = digits.slice(3, 7), p3 = digits.slice(7, 11);
+    var out = p1;
+    if (p2) out += "-" + p2;
+    if (p3) out += "-" + p3;
+    return out;
+  }
+  function formatMoney(v) {
+    var digits = String(v || "").replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+    if (!digits) return "";
+    return Number(digits).toLocaleString("ko-KR");
+  }
+  function unformatMoney(v) {
+    return Number(String(v || "").replace(/[^\d]/g, "")) || 0;
+  }
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (t && (t.id === "ap-phone" || t.id === "lookup-phone" || t.id === "edit-phone")) {
+      var pos = t.selectionStart;
+      var before = t.value;
+      t.value = formatPhone(t.value);
+      // 하이픈 자동삽입으로 늘어난 길이만큼 커서 위치 보정
+      if (pos != null) t.setSelectionRange(pos + (t.value.length - before.length), pos + (t.value.length - before.length));
+      if (t.id === "ap-phone") maybeAutoLoadProfile(t);
+    } else if (t && (t.id === "ap-account" || t.id === "edit-account")) {
+      t.value = t.value.replace(/\D/g, "");
+    } else if (t && t.classList && t.classList.contains("qty-price-input")) {
+      t.value = formatMoney(t.value);
+    } else if (t && t.id && t.id.indexOf("inv-input-") === 0) {
+      syncInvoicePreview();
+      // datalist에서 저장된 상호를 그대로 골랐으면(정확히 일치) 자동으로 나머지 정보도 불러온다.
+      if (t.id === "inv-input-name" && DATA.clientNames && DATA.clientNames.indexOf(t.value.trim()) !== -1) {
+        lookupClientAndFill(t.value.trim());
+      }
+    } else if (t && (t.id === "camp-search" || t.id === "ledger-search")) {
+      // 검색 결과 영역(#camp-list-results / #ledger-results)만 갈아끼우고, 입력창(input) 자체는
+      // 절대 다시 그리지 않는다. 한글은 자음/모음이 조합돼서 완성되는데, 조합 중에 input의
+      // DOM을 다시 만들면(예전엔 render()로 전체를 다시 그렸음) 그 조합이 깨져서 낱자로
+      // 따로따로 입력돼버렸다. 입력창을 안 건드리니 글자가 완성되는 즉시(스페이스 없이도)
+      // 바로 결과가 갱신된다.
+      if (t.id === "camp-search") {
+        UI.campSearchQuery = t.value;
+        updateCampListResults();
+      } else {
+        UI.ledgerSearchQuery = t.value;
+        updateLedgerResults();
+      }
+    }
+  });
+
+  // 거래명세서 입력 폼(상호/등록번호/대표자명/이메일/거래일자)의 현재 값을
+  // 실제 이미지로 캡처될 미리보기 표에 그대로 반영한다.
+  function syncInvoicePreview() {
+    var byId = function (id) { return document.getElementById(id); };
+    var setText = function (id, v) { var el = byId(id); if (el) el.textContent = v || ""; };
+    var nameEl = byId("inv-input-name"), regEl = byId("inv-input-reg"), ceoEl = byId("inv-input-ceo"),
+      emailEl = byId("inv-input-email"), dateEl = byId("inv-input-date");
+    setText("inv-name", nameEl ? nameEl.value : "");
+    setText("inv-reg", regEl ? regEl.value : "");
+    setText("inv-ceo", ceoEl ? ceoEl.value : "");
+    setText("inv-email", emailEl ? emailEl.value : "");
+    var dp = splitInvoiceDate(dateEl ? dateEl.value : "");
+    Array.prototype.forEach.call(document.querySelectorAll(".inv-date-y"), function (el) { el.textContent = dp.y; });
+    Array.prototype.forEach.call(document.querySelectorAll(".inv-date-m"), function (el) { el.textContent = dp.m; });
+    Array.prototype.forEach.call(document.querySelectorAll(".inv-date-d"), function (el) { el.textContent = dp.d; });
   }
 
-  loadPosts();
-  subscribeRealtime();
+  function lookupClientAndFill(name) {
+    sb.from("clients").select("*").eq("name", name.trim()).maybeSingle().then(function (res) {
+      if (res.error || !res.data) return;
+      var regEl = document.getElementById("inv-input-reg"), ceoEl = document.getElementById("inv-input-ceo"), emailEl = document.getElementById("inv-input-email");
+      if (regEl) regEl.value = res.data.reg_number || "";
+      if (ceoEl) ceoEl.value = res.data.ceo_name || "";
+      if (emailEl) emailEl.value = res.data.email || "";
+      syncInvoicePreview();
+    });
+  }
+
+  // 이번에 입력한 공급자 정보를 상호명 기준으로 저장해둬서, 다음에 같은 상호를 입력하면 자동으로 불러올 수 있게 한다.
+  function saveClientInfo() {
+    var nameEl = document.getElementById("inv-input-name");
+    var name = nameEl && nameEl.value.trim();
+    if (!name) return;
+    var regEl = document.getElementById("inv-input-reg"), ceoEl = document.getElementById("inv-input-ceo"), emailEl = document.getElementById("inv-input-email");
+    sb.from("clients").upsert({
+      name: name,
+      reg_number: (regEl && regEl.value.trim()) || null,
+      ceo_name: (ceoEl && ceoEl.value.trim()) || null,
+      email: (emailEl && emailEl.value.trim()) || null,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "name" }).then(function (res) {
+      if (!res.error) loadClients();
+    });
+  }
+
+  function downloadInvoiceImage() {
+    var camps = (UI.invoiceCampaignIds || []).map(findCampaign).filter(Boolean);
+    if (!camps.length) return;
+    if (typeof html2canvas === "undefined") { toast("이미지 생성 기능을 불러오지 못했어요. 새로고침 후 다시 시도해주세요.", "err"); return; }
+    syncInvoicePreview();
+    var node = document.getElementById("invoice-render-target");
+    if (!node) return;
+    setBusy(true);
+    // 모달 안(overflow-x:auto인 스크롤 영역, position:fixed인 배경 등)에 있는 걸 그대로 캡처하면
+    // 브라우저/환경에 따라 화면에 지금 안 보이는(스크롤해야 보이는) 오른쪽이 잘려서 캡처되는 경우가
+    // 있었다. 그래서 캡처 직전에 내용을 그대로 복제해서 그런 제약이 전혀 없는 화면 밖의 임시
+    // 컨테이너에 붙여넣고, 그 사본만 따로 캡처한다 — 부모 요소의 스크롤/overflow/포지션에
+    // 전혀 영향을 안 받아서 항상 표 전체가 다 담긴다.
+    var clone = node.cloneNode(true);
+    clone.removeAttribute("id");
+    var offscreen = document.createElement("div");
+    offscreen.style.cssText = "position:absolute;left:-99999px;top:0;background:#fff;";
+    offscreen.appendChild(clone);
+    document.body.appendChild(offscreen);
+    html2canvas(clone, { scale: 2, backgroundColor: "#ffffff" }).then(function (canvas) {
+      if (offscreen.parentNode) document.body.removeChild(offscreen);
+      canvas.toBlob(function (blob) {
+        setBusy(false);
+        if (!blob) { toast("이미지 생성에 실패했어요.", "err"); return; }
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        var nameEl = document.getElementById("inv-input-name");
+        var clientName = safeFileName((nameEl && nameEl.value) || camps[0].seller || "거래처");
+        var productLabel = camps.length === 1 ? camps[0].product : (camps.length + "개캠페인");
+        a.href = url;
+        a.download = todayISO().replace(/-/g, "") + "_" + safeFileName(productLabel) + "_" + clientName + "_거래명세서.png";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+        toast("거래명세서 이미지를 다운로드했어요.");
+      });
+    }).catch(function (err) {
+      if (offscreen.parentNode) document.body.removeChild(offscreen);
+      setBusy(false);
+      toast((err && err.message) || "이미지 생성에 실패했어요.", "err");
+    });
+    saveClientInfo();
+  }
+
+  function maybeAutoLoadProfile(phoneInput) {
+    // 연락처를 11자리까지 다 입력하면, 같은 번호로 예전에 신청했던 이름/주소/은행/계좌를
+    // 자동으로 불러와 채워준다. 매번 재조회하지 않도록 같은 번호는 한 번만 시도한다.
+    var digits = phoneInput.value.replace(/\D/g, "");
+    if (digits.length !== 11) return;
+    if (UI.profileLookupPhone === phoneInput.value) return;
+    UI.profileLookupPhone = phoneInput.value;
+    sb.rpc("my_last_profile", { p_phone: phoneInput.value }).then(function (res) {
+      if (res.error || !res.data || !res.data.length) return;
+      var p = res.data[0];
+      var form = phoneInput.closest("form");
+      if (!form) return;
+      if (p.name && form.elements.name) form.elements.name.value = p.name;
+      if (p.address && form.elements.address) form.elements.address.value = p.address;
+      if (p.bank && form.elements.bank) form.elements.bank.value = p.bank;
+      if (p.account && form.elements.account) form.elements.account.value = p.account;
+      toast("이전에 신청하셨던 정보를 불러왔어요. 확인 후 제출해주세요.");
+    });
+  }
+
+  document.addEventListener("submit", function (e) {
+    var form = e.target.closest("[data-action]");
+    if (!form) return;
+    e.preventDefault();
+    var action = form.getAttribute("data-action");
+    var fd = new FormData(form);
+    if (action === "apply-form") {
+      applyToCampaign(form.getAttribute("data-campaign"), {
+        name: fd.get("name"), phone: fd.get("phone"), address: fd.get("address"),
+        bank: fd.get("bank"), account: fd.get("account"), quantity: fd.get("quantity")
+      });
+    } else if (action === "lookup-form") {
+      var phone = document.getElementById("lookup-phone").value.trim();
+      doLookup(phone);
+    } else if (action === "submit-order") {
+      var phoneEl = document.getElementById("lookup-phone");
+      submitOrderNumber(form.getAttribute("data-applicant"), phoneEl.value.trim(), fd.get("orderNumber"));
+    } else if (action === "login-form") {
+      doLogin(document.getElementById("login-email").value.trim(), document.getElementById("login-password").value);
+    } else if (action === "create-campaign-form") {
+      var ncPrices = Array.prototype.map.call(form.querySelectorAll(".qty-price-input"), function (el) { return unformatMoney(el.value); });
+      var ncMixed = !!(document.getElementById("nc-mixed-toggle") && document.getElementById("nc-mixed-toggle").checked);
+      if (ncMixed && (Number(fd.get("realTarget")) || 0) + (Number(fd.get("emptyTarget")) || 0) < 1) {
+        toast("실배송/빈박스 목표 인원을 합쳐서 1명 이상 입력해주세요.", "warn"); return;
+      }
+      if (!ncMixed && (!fd.get("recruitCount") || Number(fd.get("recruitCount")) < 1)) {
+        toast("모집 인원을 입력해주세요.", "warn"); return;
+      }
+      createCampaign({
+        seller: fd.get("seller"), product: fd.get("product"), optionName: fd.get("optionName"), keyword: fd.get("keyword"),
+        qtyPrices: ncPrices,
+        fee: fd.get("fee"), note: fd.get("note"), recruitCount: fd.get("recruitCount"), deadline: fd.get("deadline"), imageFile: fd.get("image"),
+        mixed: ncMixed, realTarget: fd.get("realTarget"), emptyTarget: fd.get("emptyTarget")
+      });
+    } else if (action === "edit-campaign-form") {
+      var ecPrices = Array.prototype.map.call(form.querySelectorAll(".qty-price-input"), function (el) { return unformatMoney(el.value); });
+      var ecMixed = !!(document.getElementById("ec-mixed-toggle") && document.getElementById("ec-mixed-toggle").checked);
+      if (ecMixed && (Number(fd.get("realTarget")) || 0) + (Number(fd.get("emptyTarget")) || 0) < 1) {
+        toast("실배송/빈박스 목표 인원을 합쳐서 1명 이상 입력해주세요.", "warn"); return;
+      }
+      if (!ecMixed && (!fd.get("recruitCount") || Number(fd.get("recruitCount")) < 1)) {
+        toast("모집 인원을 입력해주세요.", "warn"); return;
+      }
+      updateCampaign(form.getAttribute("data-campaign"), {
+        seller: fd.get("seller"), product: fd.get("product"), optionName: fd.get("optionName"), keyword: fd.get("keyword"),
+        qtyPrices: ecPrices,
+        fee: fd.get("fee"), note: fd.get("note"), recruitCount: fd.get("recruitCount"), imageFile: fd.get("image"),
+        mixed: ecMixed, realTarget: fd.get("realTarget"), emptyTarget: fd.get("emptyTarget")
+      });
+    } else if (action === "manual-add-form") {
+      addApplicantManually(form.getAttribute("data-campaign"), {
+        name: fd.get("name"), phone: fd.get("phone"), address: fd.get("address"),
+        bank: fd.get("bank"), account: fd.get("account"), quantity: fd.get("quantity"), orderNumber: fd.get("orderNumber"),
+        deliveryType: fd.get("deliveryType") || null
+      });
+    } else if (action === "client-form") {
+      saveClientForm(form);
+    } else if (action === "update-info-form") {
+      var phoneEl4 = document.getElementById("lookup-phone");
+      updateApplicantInfo(form.getAttribute("data-applicant"), phoneEl4.value.trim(), (fd.get("phone") || "").trim(), {
+        name: fd.get("name"), address: fd.get("address"), bank: fd.get("bank"), account: fd.get("account"), quantity: fd.get("quantity")
+      });
+    }
+  });
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast("복사했어요."); }, function () { toast("복사에 실패했어요.", "err"); });
+    } else { toast("이 브라우저에서는 복사를 지원하지 않아요.", "err"); }
+  }
+
+  function buildShareUrl(c) {
+    // 실제 배포 주소(https)에서는 /api/share를 통해 카톡 공유 미리보기(이미지·제목)까지 붙는 링크를 쓰고,
+    // 로컬 파일로 열어서 테스트 중일 때는 그냥 참여자 화면으로 바로 연결되는 링크를 만든다.
+    if (location.protocol === "https:" || location.protocol === "http:") {
+      // 카톡 등 메신저는 같은 URL의 미리보기(이미지·가격 등)를 한 번 캐시해두고 계속 재사용한다.
+      // 캠페인 정보(금액 등)가 바뀔 때마다 updated_at 값을 붙여 URL을 살짝 다르게 만들어서
+      // 새로 공유할 때는 항상 최신 미리보기가 뜨게 한다.
+      var v = String(c.updated_at || c.created_at || "").replace(/\D/g, "").slice(0, 14) || "1";
+      return location.origin + "/api/share?id=" + encodeURIComponent(c.id) + "&v=" + v;
+    }
+    return location.href.split("?")[0].split("#")[0] + "?c=" + encodeURIComponent(c.id);
+  }
+
+  function shareCampaign(c) {
+    var url = buildShareUrl(c);
+    var title = c.product + (c.option_name ? " (" + c.option_name + ")" : "");
+    if (navigator.share) {
+      navigator.share({ title: title, text: title + "\n체험단에 참여해주세요!", url: url }).catch(function () {});
+    } else {
+      copyText(url);
+    }
+  }
+
+  function isKakaoInAppBrowser() {
+    return /KAKAOTALK/i.test(navigator.userAgent || "");
+  }
+  function isIOSDevice() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent || "") && !window.MSStream;
+  }
+  function isStandalonePwa() {
+    try {
+      return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+
+  function enablePush() {
+    if (isKakaoInAppBrowser()) {
+      toast("카카오톡 안에서는 알림을 켤 수 없어요. 오른쪽 위 '···' 메뉴에서 'Safari(또는 Chrome)로 열기'를 선택해주세요.", "warn");
+      return;
+    }
+    if (isIOSDevice() && !isStandalonePwa()) {
+      toast("아이폰에서는 먼저 '홈 화면에 추가'로 앱을 설치한 뒤, 그 앱에서 눌러야 알림이 켜져요.", "warn");
+      return;
+    }
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      toast("이 브라우저에서는 알림 기능을 지원하지 않아요.", "warn");
+      return;
+    }
+    if (typeof OneSignalDeferred === "undefined") {
+      toast("알림 기능을 아직 불러오는 중이에요. 잠시 후 다시 눌러주세요.", "warn");
+      return;
+    }
+    var settled = false;
+    var timer = setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      toast("이 브라우저에서는 알림을 켤 수 없는 것 같아요. Safari나 Chrome 앱에서 열어서 다시 시도해주세요.", "warn");
+    }, 6000);
+    OneSignalDeferred.push(function (OneSignal) {
+      OneSignal.Notifications.requestPermission().then(function (granted) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (granted) toast("알림을 켰어요! 새 체험단이 올라오면 알려드릴게요.");
+        else toast("알림이 꺼져있어요. 브라우저/기기 알림 설정에서 허용해주세요.", "warn");
+      }).catch(function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        toast("알림을 켜지 못했어요.", "err");
+      });
+    });
+  }
+
+  /* ================= INIT ================= */
+  render();
+  sb.auth.getSession().then(function (res) {
+    if (res.data && res.data.session) { UI.adminSession = res.data.session; if (UI.role === "admin") loadAdminData(); }
+  });
+  loadParticipantData();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+})();
 </script>
 </body>
 </html>
