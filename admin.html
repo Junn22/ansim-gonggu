@@ -144,6 +144,9 @@
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let posts = [];
+  const saving = new Set();
+  let loadVersion = 0;
+  let realtimeChannel;
   let state = { status: "all", search: "" };
 
   const $ = (sel) => document.querySelector(sel);
@@ -197,8 +200,8 @@
         <p class="caption">${escapeHTML(p.caption || "(캡션 없음)")}</p>
         <button class="more-btn" data-act="more">더보기</button>
         <div class="card-actions">
-          <button class="act-btn approve ${st === "approved" ? "active" : ""}" data-act="approve">✓ 승인</button>
-          <button class="act-btn reject ${st === "rejected" ? "active" : ""}" data-act="reject">✕ 제외</button>
+          <button ${saving.has(p.id) ? 'disabled aria-busy="true"' : ""} class="act-btn approve ${st === "approved" ? "active" : ""}" data-act="approve">✓ 승인</button>
+          <button ${saving.has(p.id) ? 'disabled aria-busy="true"' : ""} class="act-btn reject ${st === "rejected" ? "active" : ""}" data-act="reject">✕ 제외</button>
           <a class="act-btn link" href="${escapeHTML(p.url)}" target="_blank" rel="noopener">원본 보기 ↗</a>
         </div>
       </article>`;
@@ -226,18 +229,31 @@
       return;
     }
     if (act === "approve" || act === "reject") {
-      const wanted = act === "approve" ? "approved" : "rejected";
+      if (saving.has(id)) return;
       const p = posts.find((x) => x.id === id);
+      if (!p) return;
+      const wanted = act === "approve" ? "approved" : "rejected";
       const next = p.status === wanted ? "pending" : wanted;
-
-      const { data: { user } } = await sb.auth.getUser();
-      const { error } = await sb.from("posts").update({
-        status: next,
-        reviewed_at: next === "pending" ? null : new Date().toISOString(),
-        reviewed_by: next === "pending" ? null : (user?.email ?? null),
-      }).eq("id", id);
-      if (error) { alert("저장 실패: " + error.message); return; }
-      // 실시간 구독이 posts 배열을 갱신하고 다시 render() 하므로 여기선 추가 처리 불필요
+      saving.add(id);
+      render();
+      try {
+        const { data: { user }, error: authError } = await sb.auth.getUser();
+        if (authError || !user) throw new Error("다시 로그인해 주세요.");
+        const { data, error } = await sb.from("posts").update({
+          status: next,
+          reviewed_at: next === "pending" ? null : new Date().toISOString(),
+          reviewed_by: next === "pending" ? null : user.email,
+        }).eq("id", id).select("*").single();
+        if (error) throw error;
+        // 저장 응답을 즉시 반영. 이전 조회 응답은 이 결과를 덮어쓸 수 없음.
+        loadVersion++;
+        posts = posts.map((row) => row.id === id ? data : row);
+      } catch (error) {
+        alert("저장하지 못했어요: " + error.message);
+      } finally {
+        saving.delete(id);
+        render();
+      }
     }
   });
 
@@ -258,14 +274,17 @@
   });
 
   async function loadPosts() {
+    const version = ++loadVersion;
     const { data, error } = await sb.from("posts").select("*").order("score", { ascending: false });
+    if (version !== loadVersion) return;
     if (error) { console.error(error); return; }
     posts = data;
     render();
   }
 
   function subscribeRealtime() {
-    sb.channel("posts-admin")
+    if (realtimeChannel) return;
+    realtimeChannel = sb.channel("posts-admin")
       .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, () => {
         loadPosts();
       })

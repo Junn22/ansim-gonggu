@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
-<title>안심공구 — 지금 하는 육아 공구</title>
+<title>안심공구 — 육아 공구 모아보기</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -77,11 +77,13 @@
 
 <main>
   <div class="section-head">
-    <h1>지금 하는 육아 공구</h1>
+    <h1>육아 공구 모아보기</h1>
     <span class="count" id="result-count">0건</span>
   </div>
+  <p id="feed-notice" role="status" style="font-size:0.82rem;color:var(--text-dim);line-height:1.6">게시물을 불러오고 있어요.</p>
+  <button id="retry" type="button" hidden>다시 불러오기</button>
   <div class="grid" id="grid"></div>
-  <div class="empty-state" id="empty-state" hidden>지금 진행 중인 공구가 없어요. 곧 새로운 공구가 올라올 거예요.</div>
+  <div class="empty-state" id="empty-state" hidden>조건에 맞는 공구 게시물이 없어요.</div>
 </main>
 
 <footer>안심공구 · 표시된 게시물은 원 작성자의 인스타그램 게시물이며, 클릭 시 원본으로 이동합니다.</footer>
@@ -122,12 +124,9 @@
   }
 
   function mediaHTML(p) {
-    if (p.is_video && p.video_url) {
-      return `<video src="${escapeHTML(p.video_url)}" muted loop playsinline preload="metadata"
-                onmouseover="this.play()" onmouseout="this.pause()"
-                onerror="this.closest('.thumb').classList.add('broken')"></video>`;
-    }
-    return `<img src="${escapeHTML(p.image_url)}" alt="" loading="lazy"
+    // 목록은 동영상 대신 표지 이미지를 사용. 영상은 원본에서 재생.
+    if (!p.image_url) return "";
+    return `<img src="${escapeHTML(p.image_url)}" alt="${escapeHTML(p.username)} 공구 게시물" loading="lazy" referrerpolicy="no-referrer"
               onerror="this.closest('.thumb').classList.add('broken')" />`;
   }
 
@@ -135,7 +134,7 @@
     const initial = (p.username || "?").slice(0, 1).toUpperCase();
     return `
       <a class="card" href="${escapeHTML(p.url)}" target="_blank" rel="noopener">
-        <div class="thumb">
+        <div class="thumb ${p.image_url ? "" : "broken"}">
           <span class="age-badge">${fmtRelTime(p.posted_at)}</span>
           ${p.is_video ? '<span class="video-badge">🎬 영상</span>' : ""}
           ${mediaHTML(p)}
@@ -149,7 +148,7 @@
           <div class="seller-row">
             <span class="seller-avatar">${escapeHTML(initial)}</span>
             <span class="seller-name">@${escapeHTML(p.username)}</span>
-            <span class="likes">♥ ${p.likes ?? 0}</span>
+            <span class="likes">${p.likes >= 0 ? "♥ " + p.likes : ""}</span>
           </div>
         </div>
       </a>`;
@@ -162,25 +161,41 @@
   }
 
   let searchTimer;
-  $("#search").addEventListener("input", (e) => {
+  let loading = false;
+  function renderFiltered() {
+    const q = $("#search").value.trim().toLowerCase();
+    render(POSTS.filter((p) => !q || ((p.caption || "") + " " + p.username).toLowerCase().includes(q)));
+  }
+  $("#search").addEventListener("input", () => {
     clearTimeout(searchTimer);
-    const v = e.target.value.trim().toLowerCase();
-    searchTimer = setTimeout(() => {
-      if (!v) return render(POSTS);
-      render(POSTS.filter((p) => (headline(p.caption) + " " + p.username).toLowerCase().includes(v)));
-    }, 150);
+    searchTimer = setTimeout(renderFiltered, 150);
   });
 
   async function loadPosts() {
-    const { data, error } = await sb
-      .from("posts")
-      .select("*")
-      .eq("status", "approved")
-      .order("posted_at", { ascending: false });
-    if (error) { console.error(error); return; }
-    POSTS = data;
-    render(POSTS);
+    if (loading) return;
+    loading = true;
+    try {
+      const { data, error } = await sb.from("posts")
+        .select("id,username,caption,url,image_url,is_video,posted_at,likes,scraped_at")
+        .eq("status", "approved").order("posted_at", { ascending: false });
+      if (error) throw error;
+      POSTS = data;
+      renderFiltered();
+      const latest = Math.max(0, ...data.map(p => Date.parse(p.scraped_at) || 0));
+      $("#feed-notice").textContent = latest && Date.now() - latest > 2 * 86400000
+        ? "새 게시물 업데이트가 지연되고 있어요. 공구 진행 여부와 최신 사진은 원본에서 확인해 주세요."
+        : "공구 진행 여부와 구매 조건은 원본 게시물에서 확인해 주세요.";
+      $("#retry").hidden = true;
+    } catch (error) {
+      console.error(error);
+      $("#feed-notice").textContent = "게시물을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.";
+      $("#retry").hidden = false;
+    } finally { loading = false; }
   }
+  $("#retry").addEventListener("click", loadPosts);
+  // 승인 취소는 공개 RLS 때문에 Realtime 이벤트가 안 올 수 있어 주기적으로 재조회.
+  setInterval(() => { if (!document.hidden) loadPosts(); }, 30000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) loadPosts(); });
 
   function subscribeRealtime() {
     sb.channel("posts-public")
